@@ -1189,22 +1189,31 @@
             showVideo();
         });
 
-        document.addEventListener("visibilitychange", () => {
+        function resyncVideo() {
             if (!videoEngine) return;
 
-            //for when the video gats HELA LAG
-            if (!document.hidden) 
-            {
-                videoEngine.pause();
-                videoEngine.currentTime = musicEngine.currentTime;
+            videoEngine.pause();
 
-                setTimeout(() => {
-                    if (isPlaying) 
-                    {
-                        videoEngine.play().catch(() => {});
-                    }
-                }, 50);
+            // hard sync
+            videoEngine.currentTime = musicEngine.currentTime;
+
+            setTimeout(() => {
+                if (isPlaying) {
+                    videoEngine.play().catch(() => {});
+                }
+            }, 50);
+        }
+
+        // when tab visibility changes
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) {
+                resyncVideo();
             }
+        });
+
+        // 🔥 THIS is the important one for mobile
+        window.addEventListener("focus", () => {
+            resyncVideo();
         });
     </script>
  </body>
