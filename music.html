@@ -608,7 +608,7 @@
                 flex-direction: column;
                 align-items: center;
             }
-            
+
             .box-selection-bg { 
                 width: 95% !important;
                 height: auto;
@@ -1187,6 +1187,24 @@
 
         mobileQuery.addEventListener("change", () => {
             showVideo();
+        });
+
+        document.addEventListener("visibilitychange", () => {
+            if (!videoEngine) return;
+
+            //for when the video gats HELA LAG
+            if (!document.hidden) 
+            {
+                videoEngine.pause();
+                videoEngine.currentTime = musicEngine.currentTime;
+
+                setTimeout(() => {
+                    if (isPlaying) 
+                    {
+                        videoEngine.play().catch(() => {});
+                    }
+                }, 50);
+            }
         });
     </script>
  </body>
