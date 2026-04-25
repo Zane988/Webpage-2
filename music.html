@@ -1052,7 +1052,12 @@
                 videoEngine.autoplay = false;
                 videoEngine.muted = true;
                 videoEngine.loop = true;
-                videoEngine.playsInline = true;
+                videoEngine.playsInline = true; 
+        
+                videoEngine.setAttribute("playsinline", "");
+                videoEngine.setAttribute("webkit-playsinline", "");
+                
+                videoEngine.preload = "auto";
 
                 videoEngine.style.position = "absolute";
                 videoEngine.style.top = "50%";
@@ -1189,22 +1194,24 @@
             showVideo();
         });
 
-        function resyncVideo() {
-            if (!videoEngine) return;
-
+        function resyncVideo() 
+        {
+            if (!videoEngine || !musicEngine) return;
             videoEngine.pause();
-
-            // hard sync
             videoEngine.currentTime = musicEngine.currentTime;
 
-            setTimeout(() => {
+            const startPlayback = () => {
                 if (isPlaying) {
-                    videoEngine.play().catch(() => {});
+                    requestAnimationFrame(() => {
+                        videoEngine.play().catch(() => {
+                        });
+                    });
                 }
-            }, 50);
+                videoEngine.removeEventListener('seeked', startPlayback);
+            };
+            videoEngine.addEventListener('seeked', startPlayback);
         }
 
-        // when tab visibility changes
         document.addEventListener("visibilitychange", () => {
             if (!document.hidden) {
                 resyncVideo();
