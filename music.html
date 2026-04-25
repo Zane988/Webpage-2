@@ -239,7 +239,7 @@
 
             backdrop-filter: blur(2px);
             -webkit-backdrop-filter: blur(2px);
-            transition: --dynamic-color 4s ease, --x1 4s ease, --y1 4s ease, --x2 4s ease, --y2 4s ease, --x3 4s ease, --y3 4s ease;
+            transition: --dynamic-color 4s cubic-bezier(0.47, 0, 0.745, 0.715), --x1 4s cubic-bezier(0.47, 0, 0.745, 0.715), --y1 4s cubic-bezier(0.47, 0, 0.745, 0.715), --x2 4s cubic-bezier(0.47, 0, 0.745, 0.715), --y2 4s ease, --x3 4s cubic-bezier(0.47, 0, 0.745, 0.715), --y3 4s cubic-bezier(0.47, 0, 0.745, 0.715);
         }
 
         .bg-video {
@@ -422,6 +422,15 @@
             height: 4px; 
             background: rgba(255, 255, 255, 0.1); 
             border-radius: 2px; 
+        }
+
+        .progress-bar::before {
+            content: "";
+            position: absolute;
+            top: -12px;
+            bottom: -12px;
+            left: 0;
+            right: 0;
         }
 
         .progress-fill { 
@@ -1056,17 +1065,13 @@
                 videoEngine.autoplay = false;
                 videoEngine.muted = true;
                 videoEngine.loop = true;
-                videoEngine.playsInline = true; 
+                videoEngine.playsInline = true;
         
-                videoEngine.setAttribute("playsinline", "");
-                videoEngine.setAttribute("webkit-playsinline", "");
-                
-                videoEngine.preload = "auto";
+                videoEngine.preload = "metadata";
 
                 videoEngine.style.position = "absolute";
                 videoEngine.style.top = "50%";
                 videoEngine.style.left = "50%";
-
                 videoEngine.style.width = "100%";
                 videoEngine.style.height = "100%";
 
@@ -1085,7 +1090,12 @@
                 document.querySelector(".bg-video").appendChild(videoEngine);
             }
 
+            videoEngine.pause();
+            videoEngine.removeAttribute("src");
+            videoEngine.load();
+            videoEngine.srcObject = null;
             videoEngine.src = src;
+            videoEngine.load();
         }
 
         musicEngine.addEventListener("timeupdate", (e) => {
@@ -1107,7 +1117,7 @@
             if (videoEngine && !isVideoSeeking) 
             {
                 const diff = Math.abs(videoEngine.currentTime - musicEngine.currentTime);
-                if (diff > 0.3) 
+                if (diff > 0.1) 
                 {
                     videoEngine.currentTime = musicEngine.currentTime;
                 }
@@ -1165,8 +1175,7 @@
             animFrameId = requestAnimationFrame(animate);
         }
         animate();
-        updatePlayer();
-
+        
         //Hell
         function randomizeGradients() 
         {
