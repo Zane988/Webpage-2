@@ -782,6 +782,8 @@
         let currentIndex = 0;
         let isPlaying = false;
         let hasVideo = false;
+        let isVideoSeeking = false;
+        let resyncTimeout = null;
 
         const songNameEl = document.getElementById('display-name');
         const songAuthorEl = document.getElementById('display-author');
@@ -1100,7 +1102,7 @@
 
             document.getElementById('progress-dot').style.left = p + "%";
 
-            if (videoEngine) 
+            if (videoEngine && !isVideoSeeking) 
             {
                 const diff = Math.abs(videoEngine.currentTime - musicEngine.currentTime);
                 if (diff > 0.3) 
@@ -1197,19 +1199,23 @@
         function resyncVideo() 
         {
             if (!videoEngine || !musicEngine) return;
-            videoEngine.pause();
-            videoEngine.currentTime = musicEngine.currentTime;
 
-            const startPlayback = () => {
-                if (isPlaying) {
-                    requestAnimationFrame(() => {
-                        videoEngine.play().catch(() => {
-                        });
-                    });
-                }
-                videoEngine.removeEventListener('seeked', startPlayback);
-            };
-            videoEngine.addEventListener('seeked', startPlayback);
+            // Debounce — if called multiple times rapidly (visibilitychange + focus), only run once
+            clearTimeout(resyncTimeout);
+            resyncTimeout = setTimeout(() => {
+                isVideoSeeking = true;
+                videoEngine.pause();
+                videoEngine.currentTime = musicEngine.currentTime;
+
+                const startPlayback = () => {
+                    isVideoSeeking = false;
+                    if (isPlaying) {
+                        videoEngine.play().catch(() => {});
+                    }
+                    videoEngine.removeEventListener('seeked', startPlayback);
+                };
+                videoEngine.addEventListener('seeked', startPlayback);
+            }, 150);
         }
 
         document.addEventListener("visibilitychange", () => {
@@ -1218,7 +1224,6 @@
             }
         });
 
-        // 🔥 THIS is the important one for mobile
         window.addEventListener("focus", () => {
             resyncVideo();
         });
