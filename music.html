@@ -1117,7 +1117,7 @@
             if (videoEngine && !isVideoSeeking) 
             {
                 const diff = Math.abs(videoEngine.currentTime - musicEngine.currentTime);
-                if (diff > 0.1) 
+                if (diff > 0.5) 
                 {
                     videoEngine.currentTime = musicEngine.currentTime;
                 }
