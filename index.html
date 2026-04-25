@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Ace</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            image-rendering: optimizeQuality;
+            text-rendering: optimizeLegibility;
+            shape-rendering: optimizeSpeed;
+        }
+
+        a, button, .item {
+            outline: none;
+        }
+
+        body {
+            background: linear-gradient(180deg, #000000 20%, #0e0f13 60%);
+            min-height: 1500px;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding: 40px;
+            line-height: 2;
+            overflow-x: hidden;
+        }
+
+        .nav-wrapper {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 70px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.9);
+            z-index: 999;
+        }
+        
+        .nav {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            justify-content: space-between;
+            border-bottom-left-radius: 15px;
+            border-bottom-right-radius: 15px;
+            background: rgba(190, 190, 190, 0.09);
+        }
+
+        .header-format {
+            position: absolute; 
+            font-size: 28px;
+            font-weight: 600;
+            margin-left: 10%;
+            padding-left: 50px;
+            padding-top: 2px;
+        }
+
+        .nav-icon {
+            height: 40px;
+            width: auto;
+            margin-left: 10%;
+            cursor: pointer;
+        }
+
+        .nav-items {
+            display: flex;
+            margin-right: 10%;
+            gap: 30px;
+        }
+
+        .nav-text {
+            display: inline;
+        }
+
+        .nav-img {
+            display: none;
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
+
+        .nav-indicator {
+            display: none;
+        }
+
+        .item { color: white; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; text-decoration: none; }
+        .item:hover { transform: scale(1.1); color: #bbb; }
+        
+        .grid-bg {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+
+            background-image:
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 140px),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 180px),
+
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 25px),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 40px);  
+
+            will-change: transform;
+            background-size: 20% 20%;
+        }
+
+        h1 {
+            text-align: center;
+            padding-left: 0;
+            font-size: 80px; 
+            text-transform: uppercase;
+        
+            color: transparent;
+            -webkit-text-stroke: 1px #ffffff;
+            
+            letter-spacing: 12px; 
+            
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            
+            margin-top: 0px;
+            margin-bottom: 50px;
+        }
+
+        .box {
+            position: relative;
+            border: 1.35px solid #333;
+            border-radius: 7px;
+            
+            width: 100%;
+
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            padding: 20px 40px;
+            box-sizing: border-box;
+        }
+
+        .Message2 {
+            margin: 20px auto;
+            width: 90%;
+            box-sizing: border-box;
+            padding: 20px 20px 20px 20px; 
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            text-align: center;
+            word-spacing: 2px;
+            color: #e0e0e0;
+            backdrop-filter: blur(5px);
+        }
+
+        .flex-stage {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; 
+            width: 100%;
+            gap: 40px;
+            margin-bottom: 180px;
+        }
+
+        .text-container {
+            flex: 1;
+            top: 0;
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+
+        .text-left {
+            text-align: left;
+            top: 0;
+            font-weight: 400;
+            margin-left: 40px;
+        }
+
+        .text-right {
+            text-align: right;
+            top: 0;
+            font-weight: 400;
+            margin-right: 30px;
+        }
+
+        .image_coster1 {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            -webkit-box-reflect: below 5px linear-gradient(transparent 60%, rgba(0,0,0,0.2));
+        }
+
+        .image_coster1 img {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 7px;
+        }
+
+        .img-right img {
+            -webkit-mask-image: linear-gradient(to right, transparent 10%, black 70%);
+            mask-image: linear-gradient(to right, transparent 10%, black 70%);
+        }
+
+        .img-left img {
+            -webkit-mask-image: linear-gradient(to left, transparent 10%, black 70%);
+            mask-image: linear-gradient(to left, transparent 10%, black 70%);
+            
+        }
+
+        .photo-crop {
+            max-height: 350px !important;
+            object-fit: cover !important;
+            width: 100%;
+            display: block;
+        }
+
+        .resize_image {
+            transform: scale(0.8);
+        }
+
+        .ball-wrapper {
+            position: relative;
+            width: min(30vw, 200px);
+            height: min(30vw, 200px);
+            margin: 0 auto;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .ball, .ball--static {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ball {
+            z-index: 2;
+            box-shadow: 0 0 10px #e0fffd, 0 0 60px rgba(209, 234, 255, 0.3);
+            animation: pulseGlow 3s ease-in-out infinite;
+        }
+
+        .ball--static {
+            z-index: 5;
+            background: radial-gradient(circle, transparent 64%, #f5fffe 68%);
+        }
+
+        .ball-wrapper:hover .ball, .ball-wrapper:hover .ball--static { transform: scale(1.05); }
+        .ball-wrapper:active .ball, .ball-wrapper:active .ball--static { transform: scale(0.99); }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px #e0fffd, 0 0 40px rgba(209, 234, 255, 0.3); }
+            50% { box-shadow: 0 0 11px #e0fffd, 0 0 90px rgba(209, 234, 255, 0.6); }
+            100% { box-shadow: 0 0 10px #e0fffd, 0 0 40px rgba(209, 234, 255, 0.3); }
+        }
+
+        #fisheyeCanvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px); /* Moves the ball up */
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .stand {
+            position: relative;
+            bottom: -60px;
+            left: 50%;
+            transform: translateX(-49%) scale(1.4);
+            width: 200px;
+            height: 200px;
+        }
+
+        /* HEART PARTICLE */
+        .heart {
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            pointer-events: none;
+
+            filter: drop-shadow(0 0 6px red)
+            drop-shadow(0 0 12px red)
+            drop-shadow(0 0 20px red);
+
+            background-image: url('heart.png');
+            background-size: 128px 64px;
+            image-rendering: pixelated;
+
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+
+            animation: heartAnim 0.4s steps(2) infinite, fly 5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+
+        @keyframes heartAnim {
+            from { background-position: 0 0; }
+            to   { background-position: -128px 0; }
+        }
+
+        @keyframes fly 
+        {
+            to {
+                transform: translate(var(--x), var(--y)) scale(0.6);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 800px) 
+        {
+            
+            .nav-wrapper {
+                top: auto;
+                bottom: 0;
+                height: 70px;
+                backdrop-filter: none;
+                -webkit-backdrop-filter: none;
+                box-shadow: none;
+            }
+
+            .nav {
+                background: linear-gradient(
+                    to top,
+                    rgba(0,0,0,1) 0%,
+                    rgba(0,0,0,0.85) 25%,
+                    rgba(0,0,0,0.6) 55%,
+                    rgba(0,0,0,0.3) 80%,
+                    transparent 100%
+                );
+                border-radius: 0;
+                height: 100%;
+                justify-content: center;
+            }
+
+            .header-format,
+            .nav-icon {
+                display: none;
+            }
+
+            .nav-text {
+                display: none;
+            }
+
+            .nav-img {
+                display: block;
+                width: 32px;
+                height: 32px;
+                filter: brightness(0) invert(1);
+            }
+
+            .item {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .nav-items {
+                width: 100%;
+                justify-content: center;
+                gap: 70px;
+                margin: 0;
+            }
+
+            .nav-indicator {
+                display: block;
+                position: absolute;
+                top: -12px;
+                left: 50%;
+                transform: translateX(-413%);
+                width: 28px;
+                height: 28px;
+
+                animation: float1 4s ease-in-out infinite;
+
+                transition: none;
+                pointer-events: none;
+            }
+
+            @keyframes float1 {
+                0% {
+                    transform: translateY(0px) translateX(-413%);
+                }
+                50% {
+                    transform: translateY(-8px) translateX(-413%);
+                }
+                100% {
+                    transform: translateY(0px) translateX(-413%);
+                }
+            }
+
+            body {
+                padding-bottom: 100px;
+            }
+
+            /*QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ*/
+
+            .flex-stage {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 35px;
+            }
+
+            .box
+            {
+                transform: translateX(-50%);
+                flex-direction: column;
+                left: 50%;
+                width: 105%;
+            }
+
+            .Message2 {
+                padding: 20px 20px; 
+                font-size: 13px;
+                width: 100%;
+                box-sizing: border-box;
+                text-align: center;
+            }
+
+            .text-container {
+                font-size: 13px;
+            }
+
+            .text-right, .text-left {
+                text-align: center;
+                margin: 0;
+            }
+
+            .flex-stage {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                margin-bottom: 40px;
+            }
+
+            .image_coster1 img {
+                order: 1;
+                max-height: 350px; 
+                object-position: center !important;
+            }
+
+            .img-left img, .img-right img {
+                -webkit-mask-image: none;
+                mask-image: none;
+                margin: 0 auto;
+                display: block;
+            }
+
+            .text-left, .text-right {
+                margin: 0;
+                order: 2;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="main">
+
+        <div class="nav-wrapper">
+            <div class="nav">
+                <p class="header-format">
+                    Memories
+                </p>
+                <img src="icon/favicon.ico" alt="Icon" class="nav-icon">
+                
+                <div class="nav-items">
+                    <img src="icon/favicon.ico" class="nav-indicator">
+
+                    <a href="#index" class="item">
+                        <span class="nav-text">MAIN</span>
+                        <img src="icon/memories.png" class="nav-img">
+                    </a>
+
+                    <a href="gallery.html" class="item">
+                        <span class="nav-text">GALLERY</span>
+                        <img src="icon/gallery.png" class="nav-img">
+                    </a>
+
+                    <a href="music.html" class="item">
+                        <span class="nav-text">MUSIC</span>
+                        <img src="icon/music.png" class="nav-img">
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-bg"></div>
+
+        <div class="box">
+            <h1>Hello po, Papa!</h1>
+            
+            <div class="Message2">
+                Hi po papa HAHAA, i tried learn to HTML and CSS for this pooo.. since nung March po naisipan ko na gawan po kita
+                ng ganto for our Monthsary po sana kaso po wala napo me time nun kasi papunta kana po kaya naisipan kopo na May nalang puuu.. kaso wala na po eh, want kopo i continue to para sayo po etooo our memories po..
+                I hope you like it po, and i hope you know how much i love you po. I know po na hindi ako perfect, but i will always try to be the best for you po. I will always be here for you, no matter what happens po. I love you so much po, and i am so grateful to have you in my life po. Happy Monthsary po, and i hope we can celebrate many more together po! But i guess it's a no more na po muna :(
+                <br> 
+                <br>
+                <br>
+                <br> 
+                    <p style="font-weight: bold;">
+                        I hope po ma enjoy and appreciate mo po kahit papaano po kahit medyo pangit po ata design ko huhu..
+                    </p>
+            </div>
+
+            <br>
+            <br>
+            <br>
+
+            <div class="flex-stage">
+                <div class="text-container text-left">
+                    <p>Remember this po? HAHAHAHAHA Yung grabe diko alam na matatakot po pala ko sa rides naun ung Octpus huhu anlala kasiiii nakakatakott pero enjoyable kasi ksama po kita nonnn, its one of my great memoriess</p>
+                </div>
+                <div class="image_coster1 img-right">
+                    <img src="coster.jpg" alt="Coaster">
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="image_coster1 img-left">
+                    <img src="pic tgether.jpg" alt="Second Image class" class="photo-crop">
+                </div>
+                <div class="text-container text-right">
+                    <p>Tas eto naman po yung nag picture booth pooo us HAHAHAHA sayang nawala wallet ko ung isan pic andon :( peroo nasa ID ko parin po ung Pic and diko tatanggalin!</p>
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="text-container text-left">
+                    <p>Eto po yung time naman na masakit ulo ko huhu inaayos kasi reporting HAHAHAA but you brought me po ng cheese sticks and milk tea, i appreciate it veryyy much papa kooo! </p>
+                </div>
+                <div class="image_coster1 img-right">
+                    <img src="school_pic.jpg" alt="Coaster" style="max-height: 450px; object-fit: cover; object-position: center -320px;">
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="image_coster1 img-left">
+                    <img src="ilovethisman.jpg" alt="Second Image class" style="max-height: 450px; object-fit: cover; object-position: -50px -320px;"">
+                </div>
+                <div class="text-container text-right">
+                    <p>Tas etooo si Kry Kryy HAHAHAHAHA dinidilaan kapa sobraaa niyan dito ohh ang cuteee mopoooooo MWAAAAAHHH~ hehe But now pag binubuhat ko siya, i always say na "Sorry Kry kasalanan ko na di mo na makikita si papa.."</p>
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="text-container text-left">
+                    <p>HAHAHAHA After ng Octupus eto ung tinignan natin at pinic pooo, i always wonder po if kelan us makakasakay jan pero ako po yung mag lilibre sayoo.. Panaghinip nalang ata.</p>
+                </div>
+                <div class="image_coster1 img-right">
+                    <img src="vikings.jpg" alt="Coaster" style="max-height: 450px; object-fit: cover; object-position: center;">
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="image_coster1 img-left">
+                    <img src="SEAITT Days.jpg" alt="Second Image class" style="max-height: 450px; object-fit: cover; object-position: -50px center;"">
+                </div>
+                <div class="text-container text-right">
+                    <p>That time po pa, nag date muna tayo bago bumili ng J.CO nila ate HAHAHAHAHA tas ginabi tayo gagii but you still stood by my side po huhuu..</p>
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="text-container text-left">
+                    <p>I HAD SUPERRR FUN ON THIS RIDEE HAHAHAHAHAHAHA KAHIT akala mopo mahihimatay ako WHAHAHAHHA ang sarap sa feeling na kasama kita hereee kahit puro nako sigaw yawaaa HAHHWHHWAHHH i love this core memory!..</p>
+                </div>
+                <div class="image_coster1 img-right">
+                    <img src="before_disaster.jpg" alt="Coaster" style="max-height: 450px; object-fit: cover; object-position: center;">
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="image_coster1 img-left">
+                    <img src="arcade.jpg" alt="Second Image class" style="max-height: 450px; object-fit: cover; object-position: -50px center;"">
+                </div>
+                <div class="text-container text-right">
+                    <p>HAHAHA andami natin ticket po ehhh tas remember one time kala natin nasira ung converter kasi bawal dalawa dalawang ticket don? HAHAAHAHAHAHA..</p>
+                </div>
+            </div>
+
+            <div class="flex-stage">
+                <div class="text-container text-left">
+                    <p>Last but not the least.. is this! I remember this after ng HAHAHAHA sa sobrang kakilig ko dina maayos muka ko jaan.. I love this memory.. Thank you po papa!</p>
+                </div>
+                <div class="image_coster1 img-right">
+                    <img src="last_memory.jpg" alt="Coaster" style="max-height: 450px; object-fit: cover; object-position: center;">
+                </div>
+            </div>
+
+            <div class="ball-wrapper">
+                <div class="ball">
+                    <canvas id="fisheyeCanvas"></canvas>
+                    <div class="ball--static"></div>
+                </div>
+            </div>
+
+            <br>
+            <br>
+            <br>
+            <br>
+        </div>
+    </div>
+
+    <script id="vs" type="x-shader/x-vertex">
+        attribute vec2 position;
+        void main() { gl_Position = vec4(position, 0.0, 1.0); }
+    </script>
+
+    <script id="fs" type="x-shader/x-fragment">
+        precision highp float;
+        uniform vec2 u_res;
+        uniform sampler2D u_image;
+        uniform float u_time; 
+
+        void main() 
+        {
+            vec2 uv = (gl_FragCoord.xy * 2.0 / u_res.xy) - vec2(1.0);
+            float d = length(uv);
+            float z = sqrt(max(0.0, 1.0 - d * d)); 
+            
+            const float PINCUSHION = 0.40; 
+            float effect_scale = 1.9;
+            float r = (atan(d, sqrt(1.0 + d * d * PINCUSHION)) / 3.14159) * effect_scale;
+            float phi = atan(uv.y, uv.x);
+            
+            float xOffset = sin(u_time * 0.28) * 0.1; 
+            vec2 finalUV = vec2(r * cos(phi) + 0.5 + xOffset, r * sin(phi) + 0.5);
+            vec4 texColor = texture2D(u_image, finalUV);
+
+            float angle = atan(uv.x * 0.2, z * 1.5);
+            
+            float sweepSpeed = 0.90;
+            float progress = mod(u_time * sweepSpeed, 6.0) - 3.0;
+           
+            float band = abs((angle + uv.y * 0.02) - progress);
+            
+            float shineWidth = 0.1 + (z * 0.2);
+            float shine = smoothstep(shineWidth, 0.0, band) * 0.25;
+            
+            float mask = smoothstep(1.0, 0.98, d);
+            vec3 finalRGB = texColor.rgb + (vec3(1.0) * shine * mask);
+
+            gl_FragColor = vec4(finalRGB, texColor.a);
+        }
+    </script>
+
+    <script>
+        const canvas = document.getElementById('fisheyeCanvas');
+        const gl = canvas.getContext('webgl');
+
+        const pts = new Float32Array([
+            -1,-1, 1,-1, -1,1,
+            -1,1, 1,-1, 1,1
+        ]);
+
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, pts, gl.STATIC_DRAW);
+
+        function compile(gl, type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        return s;
+        }
+
+        const prog = gl.createProgram();
+        gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, document.getElementById('vs').text));
+        gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, document.getElementById('fs').text));
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        const pos = gl.getAttribLocation(prog, "position");
+        gl.enableVertexAttribArray(pos);
+        gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+
+        const uTimeLoc = gl.getUniformLocation(prog, "u_time");
+        const uResLoc = gl.getUniformLocation(prog, "u_res");
+
+        const images = [
+            "vikings.jpg",
+            "coster.jpg",
+            "pic tgether.jpg",
+            "school_pic.jpg",
+            "ilovethisman.jpg",
+            "SEAITT Days.jpg",
+            "before_disaster.jpg",
+            "arcade.jpg",
+            "last_memory.jpg"
+        ];
+
+        function randomImage() {
+        return images[Math.floor(Math.random() * images.length)];
+        }
+
+        // ---------- TEXTURE ----------
+        let tex = gl.createTexture();
+
+        function loadTexture(src) {
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = src;
+
+            img.onload = () => 
+            {
+                gl.bindTexture(gl.TEXTURE_2D, tex);
+
+                gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+                gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,img);
+            };
+        }
+        let isBlack = false;
+        function changeImage() 
+        {
+            isBlack = true;
+
+            setTimeout(() => {
+                loadTexture(randomImage());
+                isBlack = false;
+            }, 1200);
+        }
+
+        function scheduleNext() 
+        {
+            const delay = Math.floor(Math.random() * 5000) + 4000;
+
+            setTimeout(() => {
+                changeImage();
+                scheduleNext();
+            }, delay);
+        }
+
+        loadTexture(randomImage());
+        scheduleNext();
+
+        function render(now) 
+        {
+            const time = now * 0.001;
+
+            canvas.width = canvas.height = 300;
+            gl.viewport(0, 0, 300, 300);
+
+            if (isBlack) 
+            {
+                gl.clearColor(255, 255,255, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+            } 
+            else 
+            {
+                gl.uniform1f(uTimeLoc, time);
+                gl.uniform2f(uResLoc, 300, 300);
+
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+            }
+
+            requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render);
+
+        const ball = document.querySelector('.ball-wrapper');
+
+        ball.addEventListener('click', () => {
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+
+            heart.style.left = '50%';
+            heart.style.top = '50%';
+            heart.style.transform = 'translate(-50%, -50%)';
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 300 + Math.random() * 200;
+
+            const x = Math.cos(angle) * distance + 'px';
+            const y = Math.sin(angle) * distance + 'px';
+
+            heart.style.setProperty('--x', x);
+            heart.style.setProperty('--y', y);
+
+            ball.appendChild(heart);
+            heart.getBoundingClientRect();
+
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        });
+
+        const grid = document.querySelector(".grid-bg");
+
+        let x = 0;
+        let y = 0;
+
+        function animate() {
+            x += 0.12;  // horizontal speed
+            y += 0.1;  // vertical speed
+
+            grid.style.backgroundPosition = `
+                0 ${y}px,
+                ${x}px 0,
+                0 ${y * 0.4}px,
+                ${x * 0.4}px 0
+            `;
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+    "musics": [
+        {
+            "name": "Through the Years",
+            "author": "Kenny Rogers",
+            "file": "songs/throughtheyears.mp3",
+            "icon": "songs/icon/icon-throughtheyears",
+            "color": "#aeb8b4",
+            "lrc": "lyrics/through-the-years"
+        },
+        {
+            "name": "Love Story",
+            "author": "Idila",
+            "file": "songs/lovestory.mp3",
+            "icon": "songs/icon/icon-lovestory",
+            "color": "#ca3939",
+            "lrc": "lyrics/love-story"
+        },
+        {
+            "name": "Maybe This Time",
+            "author": "Michael Martin Murphey",
+            "file": "songs/maybethistime.mp3",
+            "icon": "songs/icon/icon-maybethistime",
+            "color": "#FFD986",
+            "lrc": "lyrics/maybe-this-time"
+        },
+        {
+            "name": "MASK (Gangle's Song) Feat. Marissa Lenti",
+            "author": "Gabe & Nate brown (Black Gryph0n & Baasik), Max Vernon",
+            "file": "songs/mask.mp3",
+            "icon": "songs/icon/icon-mask",
+            "color": "#fc0303",
+            "lrc": "lyrics/mask",
+            "video": "video/video-mask.mp4"
+        },
+        {
+            "name": "Can't Help Falling in Love",
+            "author": "Elvis Presley",
+            "file": "songs/falling-inlove.mp3",
+            "icon": "songs/icon/icon-falling-inlove",
+            "color": "#FFFEB2",
+            "lrc": "lyrics/cant-help-falling"
+        }
+    ]
+}
