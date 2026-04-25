@@ -216,7 +216,7 @@
         @property --dynamic-color {
             syntax: '<color>';
             inherits: false;
-            initial-value: rgba(100, 150, 200, 0.8);
+            initial-value: rgba(100, 150, 200, 0.1);
         }
 
         .box-an-bg {
@@ -233,10 +233,12 @@
             text-align: center;
 
             background-image: 
-                radial-gradient(ellipse at var(--x1) var(--y1), rgba(100, 100, 255, 0.07) 0%, transparent 80%),
+                radial-gradient(ellipse at var(--x1) var(--y1), rgba(100, 100, 255, 0.1) 0%, transparent 80%),
                 radial-gradient(ellipse at var(--x2) var(--y2), var(--dynamic-color) 0%, transparent 80%),
-                radial-gradient(ellipse at var(--x3) var(--y3), rgba(100, 200, 255, 0.09) 0%, transparent 80%);
+                radial-gradient(ellipse at var(--x3) var(--y3), rgba(100, 200, 255, 0.2) 0%, transparent 80%);
 
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
             transition: --dynamic-color 4s ease, --x1 4s ease, --y1 4s ease, --x2 4s ease, --y2 4s ease, --x3 4s ease, --y3 4s ease;
         }
 
@@ -897,7 +899,7 @@
 
         function updateGlowColor(hexCode) 
         {
-            const finalColor = hexToRGBA(hexCode, 0.078);
+            const finalColor = hexToRGBA(hexCode, 0.23);
             box.style.setProperty('--dynamic-color', finalColor);
         }
 

@@ -14,7 +14,8 @@
             "file": "songs/lovestory.mp3",
             "icon": "songs/icon/icon-lovestory",
             "color": "#ca3939",
-            "lrc": "lyrics/love-story"
+            "lrc": "lyrics/love-story",
+            "video": "video/video-love-story.mp4"
         },
         {
             "name": "Maybe This Time",
