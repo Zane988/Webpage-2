@@ -784,6 +784,8 @@
         let currentIndex = 0;
         let isPlaying = false;
         let hasVideo = false;
+        let isVideoSeeking = false;
+        let resyncTimeout = null;
 
         const songNameEl = document.getElementById('display-name');
         const songAuthorEl = document.getElementById('display-author');
@@ -1197,49 +1199,46 @@
             showVideo();
         });
 
-        let isVideoSeeking = false;
-        let resyncTimeout = null;
-
         function resyncVideo() 
         {
             if (!videoEngine || !musicEngine) return;
 
-            clearTimeout(resyncTimeout);
-            videoEngine.pause();
+            if (resyncTimeout) clearTimeout(resyncTimeout);
 
             resyncTimeout = setTimeout(() => {
                 isVideoSeeking = true;
 
                 const targetTime = musicEngine.currentTime;
 
-                videoEngine.load();
+                videoEngine.pause();
+                videoEngine.currentTime = targetTime;
 
-                const onCanPlay = () => {
-                    videoEngine.currentTime = targetTime;
-                    videoEngine.removeEventListener('canplay', onCanPlay);
+                const onSeeked = () => {
+                    isVideoSeeking = false;
 
-                    const onSeeked = () => {
-                        isVideoSeeking = false;
-                        if (isPlaying) {
-                            videoEngine.play().catch(() => {});
-                        }
-                        videoEngine.removeEventListener('seeked', onSeeked);
-                    };
-                    videoEngine.addEventListener('seeked', onSeeked);
+                    if (isPlaying)
+                    {
+                        videoEngine.play().catch(() => {});
+                    }
+
+                    videoEngine.removeEventListener('seeked', onSeeked);
                 };
-                videoEngine.addEventListener('canplay', onCanPlay);
 
-            }, 2000);
+                videoEngine.addEventListener('seeked', onSeeked);
+            }, 5000);
         }
 
-        document.addEventListener("visibilitychange", () => {
+        document.addEventListener("visibilitychange", (e) => {
+
             if (document.hidden) {
+                console.log("SSSSSSSSSS")
                 // Pause background animations to free up CPU
                 cancelAnimationFrame(animFrameId);
                 clearInterval(gradientInterval);
             } else {
                 // Resume animations
                 animate();
+                console.log("SSSSSSSSSSssssssssssss")
                 gradientInterval = setInterval(randomizeGradients, 1500);
                 resyncVideo();
             }
@@ -1247,6 +1246,7 @@
 
         window.addEventListener("focus", () => {
             resyncVideo();
+            console.log("A")
         });
     </script>
  </body>

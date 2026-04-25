@@ -26,6 +26,14 @@
             "video": "video/video-love-story.mp4"
         },
         {
+            "name": "Can't Help Falling in Love",
+            "author": "Elvis Presley",
+            "file": "songs/falling-inlove.mp3",
+            "icon": "songs/icon/icon-falling-inlove",
+            "color": "#FFFEB2",
+            "lrc": "lyrics/cant-help-falling"
+        },
+        {
             "name": "Maybe This Time",
             "author": "Michael Martin Murphey",
             "file": "songs/maybethistime.mp3",
@@ -43,12 +51,22 @@
             "video": "video/video-mask.mp4"
         },
         {
-            "name": "Can't Help Falling in Love",
-            "author": "Elvis Presley",
-            "file": "songs/falling-inlove.mp3",
-            "icon": "songs/icon/icon-falling-inlove",
-            "color": "#FFFEB2",
-            "lrc": "lyrics/cant-help-falling"
+            "name": "She Taught Me How to Yodel",
+            "author": "Sofia Shkidchenko Version | Frank Ifield",
+            "file": "songs/yodel.mp3",
+            "icon": "songs/icon/icon-yodel",
+            "color": "#46FF8D",
+            "lrc": "lyrics/yodel",
+            "video": "video/video-yodel.mp4"
+        },
+        {
+            "name": "The One Who's Running The Show",
+            "author": "Gooseworx, Dave Capdevielle, Evan Alderete, Alex Rochon",
+            "file": "songs/running-the-show.mp3",
+            "icon": "songs/icon/icon-running-the-show",
+            "color": "#A50A0A",
+            "lrc": "lyrics/running-the-show",
+            "video": "video/video-running-the-show.mp4"
         }
     ]
 }
