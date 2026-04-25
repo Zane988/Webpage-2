@@ -782,8 +782,6 @@
         let currentIndex = 0;
         let isPlaying = false;
         let hasVideo = false;
-        let isVideoSeeking = false;
-        let resyncTimeout = null;
 
         const songNameEl = document.getElementById('display-name');
         const songAuthorEl = document.getElementById('display-author');
@@ -1156,10 +1154,11 @@
         //pls i hate this idk how to put it in single foeelarafaaf
         const grid = document.querySelector(".grid-bg");
         let x = 0, y = 0;
+        let animFrameId = null;
         function animate() {
             x += 0.12; y += 0.1;
             grid.style.backgroundPosition = `0 ${y}px,${x}px 0,0 ${y * 0.4}px,${x * 0.4}px 0`;
-            requestAnimationFrame(animate);
+            animFrameId = requestAnimationFrame(animate);
         }
         animate();
         updatePlayer();
@@ -1185,7 +1184,7 @@
         }
         randomizeGradients();
 
-        setInterval(randomizeGradients, 1500);
+        let gradientInterval = setInterval(randomizeGradients, 1500);
 
         window.addEventListener('resize', () => {
             handleMarquee(songNameEl);
@@ -1196,30 +1195,51 @@
             showVideo();
         });
 
+        let isVideoSeeking = false;
+        let resyncTimeout = null;
+
         function resyncVideo() 
         {
             if (!videoEngine || !musicEngine) return;
 
-            // Debounce — if called multiple times rapidly (visibilitychange + focus), only run once
+            // Debounce — visibilitychange + focus both fire on mobile resume
             clearTimeout(resyncTimeout);
             resyncTimeout = setTimeout(() => {
                 isVideoSeeking = true;
-                videoEngine.pause();
-                videoEngine.currentTime = musicEngine.currentTime;
 
-                const startPlayback = () => {
-                    isVideoSeeking = false;
-                    if (isPlaying) {
-                        videoEngine.play().catch(() => {});
-                    }
-                    videoEngine.removeEventListener('seeked', startPlayback);
+                const targetTime = musicEngine.currentTime;
+
+                // On mobile, browsers fully suspend/stall the video element when
+                // backgrounded. A bare seek won't recover it — must call load() first.
+                videoEngine.load();
+
+                const onCanPlay = () => {
+                    videoEngine.currentTime = targetTime;
+                    videoEngine.removeEventListener('canplay', onCanPlay);
+
+                    const onSeeked = () => {
+                        isVideoSeeking = false;
+                        if (isPlaying) {
+                            videoEngine.play().catch(() => {});
+                        }
+                        videoEngine.removeEventListener('seeked', onSeeked);
+                    };
+                    videoEngine.addEventListener('seeked', onSeeked);
                 };
-                videoEngine.addEventListener('seeked', startPlayback);
-            }, 150);
+                videoEngine.addEventListener('canplay', onCanPlay);
+
+            }, 200);
         }
 
         document.addEventListener("visibilitychange", () => {
-            if (!document.hidden) {
+            if (document.hidden) {
+                // Pause background animations to free up CPU
+                cancelAnimationFrame(animFrameId);
+                clearInterval(gradientInterval);
+            } else {
+                // Resume animations
+                animate();
+                gradientInterval = setInterval(randomizeGradients, 1500);
                 resyncVideo();
             }
         });
