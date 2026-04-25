@@ -1204,15 +1204,14 @@
         {
             if (!videoEngine || !musicEngine) return;
 
-            // Debounce — visibilitychange + focus both fire on mobile resume
             clearTimeout(resyncTimeout);
+            videoEngine.pause();
+
             resyncTimeout = setTimeout(() => {
                 isVideoSeeking = true;
 
                 const targetTime = musicEngine.currentTime;
 
-                // On mobile, browsers fully suspend/stall the video element when
-                // backgrounded. A bare seek won't recover it — must call load() first.
                 videoEngine.load();
 
                 const onCanPlay = () => {
@@ -1230,7 +1229,7 @@
                 };
                 videoEngine.addEventListener('canplay', onCanPlay);
 
-            }, 200);
+            }, 2000);
         }
 
         document.addEventListener("visibilitychange", () => {

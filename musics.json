@@ -1,6 +1,14 @@
 {
     "musics": [
         {
+            "name": "Malay Ko",
+            "author": "Daniel Padila",
+            "file": "songs/malayko.mp3",
+            "icon": "songs/icon/icon-malayko",
+            "color": "#FFA32C",
+            "lrc": "lyrics/malay-ko"
+        },
+        {
             "name": "Through the Years",
             "author": "Kenny Rogers",
             "file": "songs/throughtheyears.mp3",
