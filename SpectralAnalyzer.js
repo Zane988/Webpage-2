@@ -90,9 +90,6 @@ class SpectralAnalyzer {
         this.fftN2 = this.htmlAnalyzer.fftSize;
         this.calcBars(barCount, peakHold);
 
-        console.log("sampleRate:", this.audioClip.sampleRate);
-        console.log("fftN2:", this.fftN2);
-        console.log("bars:", this.bars.map(b => `[${b.binLo}-${b.binHi}] ${b.freqLo.toFixed(0)}hz-${b.freqHi.toFixed(0)}hz`));
     }
     getLevels(levels) {
         if (!levels)
@@ -188,11 +185,19 @@ class Scaling {
 
 class AnalyzerNode2 {
     #fftSize
+    #dataArray
 
     constructor(source, fft = 2048) {
         this.context = source.context;
         this.#fftSize = AnalyzerNode2.#nextPow2(fft);
         this.analyzer = this.context.createAnalyser();
+
+        this.analyzer.fftSize = this.#fftSize;
+        this.analyzer.minDecibels = -100;
+        this.analyzer.maxDecibels = -30;
+        this.analyzer.smoothingTimeConstant = 0.1;
+
+        this.#dataArray = new Float32Array(this.analyzer.frequencyBinCount);
         source.connect(this.analyzer);
     }
 
@@ -208,12 +213,9 @@ class AnalyzerNode2 {
     }
 
     getFloatFrequencyData() {
-        this.analyzer.fftSize = this.#fftSize;
-        this.analyzer.minDecibels = -100;
-        this.analyzer.maxDecibels = -30;
-        this.analyzer.smoothingTimeConstant = 0.1;
-        const array = new Float32Array(this.analyzer.frequencyBinCount);
-        this.analyzer.getFloatFrequencyData(array);
-        return Array.from(array);
+        
+        
+        this.analyzer.getFloatFrequencyData(this.#dataArray);
+        return this.#dataArray;
     }
 }
