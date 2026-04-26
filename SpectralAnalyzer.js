@@ -211,6 +211,7 @@ class AnalyzerNode2 {
         this.analyzer.fftSize = this.#fftSize;
         this.analyzer.minDecibels = -100;
         this.analyzer.maxDecibels = -30;
+        this.analyzer.smoothingTimeConstant = 0.1;
         const array = new Float32Array(this.analyzer.frequencyBinCount);
         this.analyzer.getFloatFrequencyData(array);
         return Array.from(array);
