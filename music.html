@@ -1035,7 +1035,7 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.1, 40, 256);
+                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, 256);
                 }
             }
         }
