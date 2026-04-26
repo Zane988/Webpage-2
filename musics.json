@@ -9,6 +9,24 @@
             "lrc": "lyrics/malay-ko"
         },
         {
+            "name": "Akuma no Ko",
+            "author": "Ai Higuchi, Motohiro Ishii and Masako Yoshikawa",
+            "file": "songs/akuma.mp3",
+            "icon": "songs/icon/icon-akuma",
+            "color": "#FFA32C",
+            "lrc": "lyrics/akuma",
+            "video": "video/video-akuma.mp4"
+        },
+        {
+            "name": "Vogel im Käfig",
+            "author": "Cyua and Hiroyuki Sawano",
+            "file": "songs/vogel.mp3",
+            "icon": "songs/icon/icon-vogel",
+            "color": "#FFA32C",
+            "lrc": "lyrics/vogel",
+            "video": "video/video-vogel.mp4"
+        },
+        {
             "name": "Through the Years",
             "author": "Kenny Rogers",
             "file": "songs/throughtheyears.mp3",
