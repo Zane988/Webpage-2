@@ -908,7 +908,7 @@
                 </div>
             </div>
         </div>
-        <canvas id="visualizer" class="visualizer"></canvas>
+        <svg id="visualizer" class="visualizer" xmlns="http://www.w3.org/2000/svg"></svg>
 
         <div class="playlist-main">
             <div class="playlist-group">
@@ -1485,50 +1485,65 @@
             });
         }
 
-        const canvas = document.getElementById("visualizer");
-        const ctx = canvas.getContext("2d");
+        const svg = document.getElementById("visualizer");
+        let svgBars = [];
+        let svgW = 0, svgH = 0;
+
+        function initSvgBars(count) {
+            svg.innerHTML = "";
+            svgBars = [];
+            svgW = svg.clientWidth || svg.getBoundingClientRect().width || window.innerWidth;
+            svgH = svg.clientHeight || svg.getBoundingClientRect().height || 80;
+            svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
+            svg.setAttribute("preserveAspectRatio", "none");
+            const barWidth = svgW / count;
+            for (let i = 0; i < count; i++) {
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", i * barWidth);
+                rect.setAttribute("y", svgH);
+                rect.setAttribute("width", Math.max(1, barWidth - 2));
+                rect.setAttribute("height", 0);
+                rect.setAttribute("fill", "white");
+                svg.appendChild(rect);
+                svgBars.push(rect);
+            }
+        }
+        // dummy ctx placeholder removed — SVG used instead
 
         let resizePending = false;
         window.addEventListener("resize", () => {
             if (!resizePending) {
                 resizePending = true;
                 requestAnimationFrame(() => {
-                    canvas.width = window.innerWidth /2;
-                    canvas.height = window.innerHeight/2;
-                    canvas.style.width = "100vw";
-                    canvas.style.height = "100vh";
+                    if (svgBars.length > 0) initSvgBars(svgBars.length);
                     resizePending = false;
                 });
             }
         });
 
-        function cnvs()
-        {
-            canvas.width = window.innerWidth /2;
-                    canvas.height = window.innerHeight/2;
-                    canvas.style.width = "100vw";
-                    canvas.style.height = "100vh";
-        }
-
-        cnvs()
-        setInterval(draw, 1)
+        setInterval(draw, 16);
         function draw() {
-            
             if (!analyzer) return;
 
             const levels = analyzer.getLevels(audioLevels);
-            const w = canvas.width;
-            const h = canvas.height;
 
-            ctx.clearRect(0, 0, w, h);
+            if (svgBars.length !== levels.length) 
+            {
+                initSvgBars(levels.length);
+            }
 
+            const h = svgH;
+            const w = svgW;
             const barWidth = (w / levels.length) | 0;
-            ctx.fillStyle = "white"; // ← moved outside the loop
 
-            for (let i = 0; i < levels.length; i++) {
+            for (let i = 0; i < levels.length; i++) 
+            {
                 const v = bound(levels[i].value, 0, 1);
                 const bh = v * h;
-                ctx.fillRect((i * barWidth) | 0, (h - bh) | 0, (barWidth - 2) | 0, bh | 0);
+                svgBars[i].setAttribute("y", h - bh);
+                svgBars[i].setAttribute("height", bh);
+                svgBars[i].setAttribute("x", i * barWidth);
+                svgBars[i].setAttribute("width", Math.max(1, barWidth - 2));
             }
         }
 
