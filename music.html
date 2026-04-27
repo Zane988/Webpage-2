@@ -1037,7 +1037,7 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 64 : 256);
+                    analyzer = new SpectralAnalyzer(source, (mobileQuery.matches) ? 2 : 7, 0.01, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 64 : 256);
                 }
             }
         }
