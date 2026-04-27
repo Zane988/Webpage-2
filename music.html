@@ -622,11 +622,24 @@
             transform: translateX(-50%);
             pointer-events: none;
             z-index: -50;
-            image-rendering: pixelated;
-            width: 70%;
-            height: auto !important;
             opacity: 0.1;
+
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 16px;
         }
+
+        .viz-bar {
+            width: 69px;
+            height: 316px;
+            flex-shrink: 0;
+            background-image: url('viz.png');
+            background-repeat: no-repeat;
+            background-size: 512px 512px;
+            background-position: 0px 0px;
+        }
+
 
         /* FOR MOBILE ARGHHH */
 
@@ -819,6 +832,16 @@
             .playlist-group {
                 padding: 20px 40px;
             }
+
+            .viz-bar {
+                width: 34px;
+                height: 158px;
+                flex-shrink: 0;
+                background-image: url('viz.png');
+                background-repeat: no-repeat;
+                background-size: 256px 256px;
+                background-position: 0px 0px;
+            }
         }
      </style>
  </head>
@@ -914,7 +937,7 @@
                     </div>
                 </div>
 
-                <canvas id="visualizer" class="visualizer"></canvas>
+                <div id="visualizer" class="visualizer"></div>
             </div>
         </div>
         
@@ -1491,29 +1514,38 @@
             });
         }
 
-        const GAP = 64;
         const VIZ_FRAMES = 6;
-        const FRAME_W = 138;
-        const FRAME_H = 633;
-        const frameWidthWithGap = FRAME_W + GAP;
+        const vizContainer = document.getElementById('visualizer');
+        let barEls = [];
+        let FRAME_X = [];
+        let FRAME_W = 69;
 
-        const vizCanvas = document.getElementById('visualizer');
-        const vizCtx = vizCanvas.getContext('2d');
-
-        const vizSprite = new Image();
-
-        let DISPLAY_W, DISPLAY_H;
-        const vizParent = vizCanvas.parentElement;
-
-        function resizeCanvas() 
+        function initAnalyzer()
         {
-            const totalGap = GAP * (VIZ_FRAMES - 1);
-            vizCanvas.width = (FRAME_W * VIZ_FRAMES) + totalGap;
-            vizCanvas.height = FRAME_H;
-        }
+            const isMobile = mobileQuery.matches;
 
-        resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+            FRAME_W  = isMobile ? 34 : 69;
+            FRAME_X  = isMobile ? [0,34,68,102,136,170] : [0,69,138,207,276,345];
+
+            const frameH   = isMobile ? 158 : 316;
+            const bgSize   = isMobile ? '256px 256px' : '512px 512px';
+            const gap      = isMobile ? 16 : 32;
+
+            vizContainer.style.gap = gap + 'px';
+            vizContainer.innerHTML = '';
+            barEls = [];
+
+            for (let i = 0; i < VIZ_FRAMES; i++)
+            {
+                const bar = document.createElement('div');
+                bar.className = 'viz-bar';
+                bar.style.width = FRAME_W + 'px';
+                bar.style.height = frameH + 'px';
+                bar.style.backgroundSize = bgSize;
+                vizContainer.appendChild(bar);
+                barEls.push(bar);
+            }
+        }
 
         const CANVAS_INTERVAL = 1000 / 60;
         let lastCanvasTime = 0;
@@ -1525,10 +1557,9 @@
             if (timestamp - lastCanvasTime < CANVAS_INTERVAL) return;
             lastCanvasTime = timestamp;
 
-            if (!analyzer || !vizSprite.complete) return;
+            if (!analyzer || barEls.length === 0) return;
 
             const levels = analyzer.getLevels(audioLevels);
-            vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
 
             for (let i = 0; i < VIZ_FRAMES; i++)
             {
@@ -1539,12 +1570,17 @@
                 if (v > 1) v = 1; else if (v < 0) v = 0;
 
                 const frameIndex = (v * (VIZ_FRAMES - 1)) | 0;
-                vizCtx.drawImage(vizSprite, frameIndex * FRAME_W, 0, FRAME_W, FRAME_H, i * frameWidthWithGap, 0, FRAME_W, FRAME_H);
+                barEls[i].style.backgroundPositionX = -FRAME_X[frameIndex] + 'px';
             }
         }
 
-        vizSprite.onload = () => mainLoop(performance.now());
-        vizSprite.src = 'viz.png';
+        initAnalyzer();
+        mainLoop(performance.now());
+
+        window.addEventListener("resize", (e) => {
+            barEls = []
+            initAnalyzer()
+        })
 
         function bound(Value, Min, Max)
         {
