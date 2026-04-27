@@ -1501,36 +1501,46 @@
         let DISPLAY_W, DISPLAY_H;
         const vizParent = vizCanvas.parentElement;
 
-        function resizeCanvas() {
+        function resizeCanvas() 
+        {
             const totalGap = GAP * (VIZ_FRAMES - 1);
-            vizCanvas.width = (FRAME_W * VIZ_FRAMES) + totalGap;
-            vizCanvas.height = FRAME_H;
-        }
+            const scale = mobileQuery.matches ? 0.5 : 1; 
+            
+            vizCanvas.width = ((FRAME_W * VIZ_FRAMES) + totalGap) * scale;
+            vizCanvas.height = FRAME_H * scale;
 
+            vizCanvas.style.width = "70%";
+            vizCanvas.style.height = "auto";
+        }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        function draw() 
-        {
-            requestAnimationFrame(draw);
-            if (!analyzer || !vizSprite.complete) return;
+        function draw() {
+    requestAnimationFrame(draw);
+    if (!analyzer || !vizSprite.complete) return;
 
-            const levels = analyzer.getLevels(audioLevels);
-            vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
+    const levels = analyzer.getLevels(audioLevels);
+    vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
 
-            for (let i = 0; i < VIZ_FRAMES; i++)
-            {
-                const lvl = levels[i];
-                if (!lvl) continue;
+    for (let i = 0; i < VIZ_FRAMES; i++) {
+        const lvl = levels[i];
+        if (!lvl) continue;
 
-                let v = lvl.value;
-                if (v > 1) v = 1; else if (v < 0) v = 0;
+        let v = lvl.value;
+        if (v > 1) v = 1; else if (v < 0) v = 0;
 
-                const frameIndex = (v * (VIZ_FRAMES - 1)) | 0; 
-                
-                vizCtx.drawImage(vizSprite, frameIndex * FRAME_W, 0, FRAME_W, FRAME_H, i * frameWidthWithGap, 0, FRAME_W, FRAME_H);
-            }
-        }
+        // Use bitwise OR for faster flooring
+        const frameIndex = (v * (VIZ_FRAMES - 1)) | 0; 
+        const srcX = frameIndex * FRAME_W;
+        const destX = i * (FRAME_W + GAP);
+
+        vizCtx.drawImage(
+            vizSprite,
+            srcX, 0, FRAME_W, FRAME_H,
+            destX, 0, FRAME_W, FRAME_H
+        );
+    }
+}
 
         vizSprite.onload = () => draw();
         vizSprite.src = 'viz.png';
