@@ -952,7 +952,6 @@
 
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const source = audioContext.createMediaElementSource(musicEngine);
-        source.connect(audioContext.destination);
         
         let videoEngine = null;
         
