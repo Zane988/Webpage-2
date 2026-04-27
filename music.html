@@ -1039,11 +1039,10 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 256 : 256);
+                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 256 : 256, 'spectral.worker.js');
                     if(mobileQuery.matches)
                     {
-                        analyzer.minFreq = 50 / 5;
-                        analyzer.maxFreq = 22000 / 5;
+                        analyzer.updateFreqRange(50 / 5, 22000 / 5);
                     }
                 }
             }
@@ -1521,7 +1520,12 @@
             requestAnimationFrame(draw);
             if (!analyzer || !vizSprite.complete) return;
 
-            const levels = analyzer.getLevels(audioLevels);
+            // Send this frame's raw frequency data to the worker (non-blocking)
+            analyzer.sendFrame();
+
+            // Read back the levels the worker computed on the previous frame
+            const levels = analyzer.getLevels();
+
             vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
 
             for (let i = 0; i < VIZ_FRAMES; i++)
