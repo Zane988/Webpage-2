@@ -40,7 +40,7 @@ class Scaling {
 let bars      = [];   // computed once in "init"
 let minDb     = -70;
 let maxDb     = -20;
-let fftN2     = 2048;
+let fftN2     = 2048; 
 
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
