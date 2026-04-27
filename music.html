@@ -1039,7 +1039,7 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 64 : 256);
+                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 256 : 256);
                 }
             }
         }
@@ -1491,6 +1491,7 @@
         const VIZ_FRAMES = 6;
         const FRAME_W = 138;
         const FRAME_H = 633;
+        const frameWidthWithGap = FRAME_W + GAP;
 
         const vizCanvas = document.getElementById('visualizer');
         const vizCtx = vizCanvas.getContext('2d');
@@ -1509,24 +1510,25 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        function draw() {
+        function draw() 
+        {
             requestAnimationFrame(draw);
-            if (!analyzer) return;
+            if (!analyzer || !vizSprite.complete) return;
 
             const levels = analyzer.getLevels(audioLevels);
             vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
 
-            for (let i = 0; i < VIZ_FRAMES; i++) {
-                const v = bound(levels[i]?.value ?? 0, 0, 1);
-                const frameIndex = Math.min(VIZ_FRAMES - 1, Math.floor(v * VIZ_FRAMES));
-                const srcX = frameIndex * FRAME_W;
-                const destX = i * (FRAME_W + GAP);
+            for (let i = 0; i < VIZ_FRAMES; i++)
+            {
+                const lvl = levels[i];
+                if (!lvl) continue;
 
-                vizCtx.drawImage(
-                    vizSprite,
-                    srcX, 0, FRAME_W, FRAME_H,
-                    destX, 0, FRAME_W, FRAME_H  // no scaling, use FRAME_W and FRAME_H directly
-                );
+                let v = lvl.value;
+                if (v > 1) v = 1; else if (v < 0) v = 0;
+
+                const frameIndex = (v * (VIZ_FRAMES - 1)) | 0; 
+                
+                vizCtx.drawImage(vizSprite, frameIndex * FRAME_W, 0, FRAME_W, FRAME_H, i * frameWidthWithGap, 0, FRAME_W, FRAME_H);
             }
         }
 

@@ -119,33 +119,34 @@ class SpectralAnalyzer {
     }
 }
 class RecentPeakFinder {
-    buffer = [];
-    bufferIndex = 0;
-    _peak = 0;
+    constructor(length = 30) {
+        this.buffer = new Float32Array(length); // Use TypedArray
+        this.length = length;
+        this.bufferIndex = 0;
+        this._peak = 0;
+    }
+
+    push(value) {
+        const oldValue = this.buffer[this.bufferIndex];
+        this.buffer[this.bufferIndex] = value;
+
+        if (value >= this._peak) {
+            // New value is higher than current peak: Easy update
+            this._peak = value;
+        } else if (oldValue === this._peak) {
+            // The value we just removed WAS the peak: We must find the new max
+            let max = 0;
+            for (let i = 0; i < this.length; i++) {
+                if (this.buffer[i] > max) max = this.buffer[i];
+            }
+            this._peak = max;
+        }
+        
+        this.bufferIndex = (this.bufferIndex + 1) % this.length;
+    }
+
     get peak() {
         return this._peak;
-    }
-    setPeak(v) {
-        this._peak = v;
-    }
-    _lastValue = 0.0;
-    get lastValue() {
-        return this._lastValue;
-    }
-    constructor(length = 30) {
-        this.buffer = new Array(length);
-        this.buffer.length = length;
-    }
-    push(value) {
-        this.buffer[this.bufferIndex] = value;
-        if (value > this._peak)
-            this._peak = value;
-        else
-            this._peak = Signal.max(this.buffer);
-        this.bufferIndex = this.bufferIndex + 1 === this.buffer.length ? 0 : this.bufferIndex + 1;
-    }
-    get_lastValue() {
-        return this.bufferIndex === 0 ? this.buffer[this.buffer.length - 1] : this.buffer[this.bufferIndex - 1];
     }
 }
 class Signal {
