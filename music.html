@@ -804,11 +804,14 @@
         .visualizer {
             position: absolute;
             bottom: 0;
-            left: 0;
-            width: 100%;
+            left: 50%;
+            width: 50%;
             height: 80px;
+            transform: translateX(-50%);
             pointer-events: none;
             z-index: 0;
+
+            will-change: transform;
         }
      </style>
  </head>
@@ -903,10 +906,9 @@
                         </svg>
                     </div>
                 </div>
-
-                <canvas id="visualizer"></canvas>
             </div>
         </div>
+        <canvas id="visualizer" class="visualizer"></canvas>
 
         <div class="playlist-main">
             <div class="playlist-group">
