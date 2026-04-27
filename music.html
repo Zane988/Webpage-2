@@ -608,6 +608,20 @@
 
         /* AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA */
 
+
+        .visualizer {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+            z-index: -50;
+            image-rendering: pixelated;
+            width: 70%;
+            height: auto !important;
+            opacity: 0.1;
+        }
+
         /* FOR MOBILE ARGHHH */
 
         @media (max-width: 800px) {
@@ -800,18 +814,6 @@
                 padding: 20px 40px;
             }
         }
-
-        .visualizer {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            pointer-events: none;
-            z-index: 0;
-            image-rendering: pixelated;
-            width: 25%;   /* half of 138, or adjust as needed */
-            height: auto;
-        }
      </style>
  </head>
 
@@ -905,10 +907,11 @@
                         </svg>
                     </div>
                 </div>
+
+                <canvas id="visualizer" class="visualizer"></canvas>
             </div>
         </div>
-        <canvas id="visualizer" class="visualizer" width="828" height="633"></canvas>
-
+        
         <div class="playlist-main">
             <div class="playlist-group">
                 <div class="pl-bg">
@@ -1484,35 +1487,28 @@
             });
         }
 
-        // --- constants first ---
-        const GAP = 32;
+        const GAP = 64;
         const VIZ_FRAMES = 6;
-        const FRAME_W = 137;
+        const FRAME_W = 138;
         const FRAME_H = 633;
-        const DISPLAY_H = 633; // your desired display height
 
         const vizCanvas = document.getElementById('visualizer');
         const vizCtx = vizCanvas.getContext('2d');
 
         const vizSprite = new Image();
 
-        // --- then resize logic ---
-        let DISPLAY_W;
-        const parent = vizCanvas.parentElement;
+        let DISPLAY_W, DISPLAY_H;
+        const vizParent = vizCanvas.parentElement;
 
-        function resizeCanvas() 
-        {
+        function resizeCanvas() {
             const totalGap = GAP * (VIZ_FRAMES - 1);
-            const availableW = parent.clientWidth;
-            DISPLAY_W = Math.floor((availableW - totalGap) / VIZ_FRAMES);
-            vizCanvas.width = availableW;
-            vizCanvas.height = DISPLAY_H;
+            vizCanvas.width = (FRAME_W * VIZ_FRAMES) + totalGap;
+            vizCanvas.height = FRAME_H;
         }
 
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // --- then draw ---
         function draw() {
             requestAnimationFrame(draw);
             if (!analyzer) return;
@@ -1524,17 +1520,16 @@
                 const v = bound(levels[i]?.value ?? 0, 0, 1);
                 const frameIndex = Math.min(VIZ_FRAMES - 1, Math.floor(v * VIZ_FRAMES));
                 const srcX = frameIndex * FRAME_W;
-                const destX = i * (DISPLAY_W + GAP); // use DISPLAY_W not FRAME_W
+                const destX = i * (FRAME_W + GAP);
 
                 vizCtx.drawImage(
                     vizSprite,
-                    srcX, 0, FRAME_W, FRAME_H,        // source: full sprite frame
-                    destX, 0, DISPLAY_W, DISPLAY_H    // dest: scaled to fit
+                    srcX, 0, FRAME_W, FRAME_H,
+                    destX, 0, FRAME_W, FRAME_H  // no scaling, use FRAME_W and FRAME_H directly
                 );
             }
         }
 
-        // --- start loop only after sprite loads ---
         vizSprite.onload = () => draw();
         vizSprite.src = 'viz.png';
 
