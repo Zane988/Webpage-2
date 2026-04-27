@@ -1499,11 +1499,9 @@
                 });
             }
         });
-
-        // 2. Set fillStyle ONCE outside the loop — huge win
+        setInterval(draw, 1)
         function draw() {
-            requestAnimationFrame(draw);
-
+            
             if (!analyzer) return;
 
             const levels = analyzer.getLevels(audioLevels);
@@ -1528,7 +1526,6 @@
             return (Max != null && lowerBound > Max) ? Max : lowerBound;
         }
 
-        draw();
     </script>
  </body>
 </html>

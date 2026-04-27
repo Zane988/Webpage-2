@@ -8,7 +8,7 @@ var MathType;
 })(MathType || (MathType = {}));
 class SpectralAnalyzer {
     minDb = -70;
-    maxDb = -2;
+    maxDb = -20;
 
     maxDecibels = -30;
     minDecibels = -100;
@@ -194,7 +194,7 @@ class AnalyzerNode2 {
 
         this.analyzer.fftSize = this.#fftSize;
         this.analyzer.minDecibels = -70;
-        this.analyzer.maxDecibels = -2;
+        this.analyzer.maxDecibels = -20;
         this.analyzer.smoothingTimeConstant = 0.1;
 
         this.#dataArray = new Float32Array(this.analyzer.frequencyBinCount);
