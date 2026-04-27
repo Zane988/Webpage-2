@@ -1420,14 +1420,14 @@
         document.addEventListener("visibilitychange", (e) => {
 
             if (document.hidden) {
-                console.log("SSSSSSSSSS")
                 // Pause background animations to free up CPU
                 cancelAnimationFrame(animFrameId);
+                cancelAnimationFrame(rafId);
                 clearInterval(gradientInterval);
             } else {
                 // Resume animations
                 animate();
-                console.log("SSSSSSSSSSssssssssssss")
+                draw();
                 gradientInterval = setInterval(randomizeGradients, 1500);
                 resyncVideo();
             }
@@ -1485,68 +1485,53 @@
             });
         }
 
-        const svg = document.getElementById("visualizer");
-        let svgBars = [];
-        let svgW = 0, svgH = 0;
+        const vizSvg = document.getElementById("visualizer");
+        const vizPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        vizPath.setAttribute("fill", "white");
+        vizSvg.appendChild(vizPath);
 
-        function initSvgBars(count) {
-            svg.innerHTML = "";
-            svgBars = [];
-            svgW = svg.clientWidth || svg.getBoundingClientRect().width || window.innerWidth;
-            svgH = svg.clientHeight || svg.getBoundingClientRect().height || 80;
-            svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
-            svg.setAttribute("preserveAspectRatio", "none");
-            const barWidth = svgW / count;
-            for (let i = 0; i < count; i++) {
-                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                rect.setAttribute("x", i * barWidth);
-                rect.setAttribute("y", svgH);
-                rect.setAttribute("width", Math.max(1, barWidth - 2));
-                rect.setAttribute("height", 0);
-                rect.setAttribute("fill", "white");
-                svg.appendChild(rect);
-                svgBars.push(rect);
-            }
+        let vizW = 0, vizH = 0, vizBarW = 0, vizCount = 0;
+
+        function initViz(count) {
+            vizCount = count;
+            vizW = vizSvg.clientWidth || vizSvg.getBoundingClientRect().width || window.innerWidth;
+            vizH = vizSvg.clientHeight || vizSvg.getBoundingClientRect().height || 80;
+            vizBarW = vizW / count;
+            vizSvg.setAttribute("viewBox", `0 0 ${vizW} ${vizH}`);
         }
-        // dummy ctx placeholder removed — SVG used instead
 
         let resizePending = false;
         window.addEventListener("resize", () => {
             if (!resizePending) {
                 resizePending = true;
                 requestAnimationFrame(() => {
-                    if (svgBars.length > 0) initSvgBars(svgBars.length);
+                    if (vizCount > 0) initViz(vizCount);
                     resizePending = false;
                 });
             }
         });
 
-        setInterval(draw, 16);
-        function draw() 
-        {
+        let rafId = null;
+        function draw() {
+            rafId = requestAnimationFrame(draw);
             if (!analyzer) return;
 
             const levels = analyzer.getLevels(audioLevels);
+            if (!levels || levels.length === 0) return;
 
-            if (svgBars.length !== levels.length) 
-            {
-                initSvgBars(levels.length);
+            if (levels.length !== vizCount) initViz(levels.length);
+
+            const h = vizH, bw = vizBarW, gap = bw > 3 ? 2 : 0;
+            let d = "";
+            for (let i = 0; i < levels.length; i++) {
+                const bh = bound(levels[i].value, 0, 1) * h;
+                if (bh < 0.5) continue;
+                const x = i * bw;
+                d += `M${x},${h}h${bw - gap}v${-bh}h${-(bw - gap)}z`;
             }
-
-            const h = svgH;
-            const w = svgW;
-            const barWidth = (w / levels.length) | 0;
-
-            for (let i = 0; i < levels.length; i++) 
-            {
-                const v = bound(levels[i].value, 0, 1);
-                const bh = v * h;
-                svgBars[i].setAttribute("y", h - bh);
-                svgBars[i].setAttribute("height", bh);
-                svgBars[i].setAttribute("x", i * barWidth);
-                svgBars[i].setAttribute("width", Math.max(1, barWidth - 2));
-            }
+            vizPath.setAttribute("d", d);
         }
+        draw();
 
         function bound(Value, Min, Max)
         {
