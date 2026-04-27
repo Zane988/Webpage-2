@@ -805,13 +805,12 @@
             position: absolute;
             bottom: 0;
             left: 50%;
-            width: 50%;
-            height: 80px;
             transform: translateX(-50%);
             pointer-events: none;
             z-index: 0;
-
-            will-change: transform;
+            image-rendering: pixelated;
+            width: 25%;   /* half of 138, or adjust as needed */
+            height: auto;
         }
      </style>
  </head>
@@ -908,7 +907,7 @@
                 </div>
             </div>
         </div>
-        <svg id="visualizer" class="visualizer" xmlns="http://www.w3.org/2000/svg"></svg>
+        <canvas id="visualizer" class="visualizer" width="828" height="633"></canvas>
 
         <div class="playlist-main">
             <div class="playlist-group">
@@ -1485,69 +1484,59 @@
             });
         }
 
-        const svg = document.getElementById("visualizer");
-        let svgBars = [];
-        let svgW = 0, svgH = 0;
+        // --- constants first ---
+        const GAP = 32;
+        const VIZ_FRAMES = 6;
+        const FRAME_W = 137;
+        const FRAME_H = 633;
+        const DISPLAY_H = 633; // your desired display height
 
-        function initSvgBars(count) 
+        const vizCanvas = document.getElementById('visualizer');
+        const vizCtx = vizCanvas.getContext('2d');
+
+        const vizSprite = new Image();
+
+        // --- then resize logic ---
+        let DISPLAY_W;
+        const parent = vizCanvas.parentElement;
+
+        function resizeCanvas() 
         {
-            svg.innerHTML = "";
-            svgBars = [];
-            svgW = svg.clientWidth || svg.getBoundingClientRect().width || window.innerWidth;
-            svgH = svg.clientHeight || svg.getBoundingClientRect().height || 80;
-            svg.setAttribute("viewBox", `0 0 ${svgW} ${svgH}`);
-            svg.setAttribute("preserveAspectRatio", "none");
-            const barWidth = svgW / count;
-            for (let i = 0; i < count; i++) {
-                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                rect.setAttribute("x", i * barWidth);
-                rect.setAttribute("y", svgH);
-                rect.setAttribute("width", Math.max(1, barWidth - 2));
-                rect.setAttribute("height", 0);
-                rect.setAttribute("fill", "white");
-                svg.appendChild(rect);
-                svgBars.push(rect);
-            }
+            const totalGap = GAP * (VIZ_FRAMES - 1);
+            const availableW = parent.clientWidth;
+            DISPLAY_W = Math.floor((availableW - totalGap) / VIZ_FRAMES);
+            vizCanvas.width = availableW;
+            vizCanvas.height = DISPLAY_H;
         }
-        // dummy ctx placeholder removed — SVG used instead
 
-        let resizePending = false;
-        window.addEventListener("resize", () => {
-            if (!resizePending) {
-                resizePending = true;
-                requestAnimationFrame(() => {
-                    if (svgBars.length > 0) initSvgBars(svgBars.length);
-                    resizePending = false;
-                });
-            }
-        });
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
 
-        setInterval(draw, 16);
-        function draw() 
-        {
+        // --- then draw ---
+        function draw() {
+            requestAnimationFrame(draw);
             if (!analyzer) return;
 
             const levels = analyzer.getLevels(audioLevels);
+            vizCtx.clearRect(0, 0, vizCanvas.width, vizCanvas.height);
 
-            if (svgBars.length !== levels.length) 
-            {
-                initSvgBars(levels.length);
-            }
+            for (let i = 0; i < VIZ_FRAMES; i++) {
+                const v = bound(levels[i]?.value ?? 0, 0, 1);
+                const frameIndex = Math.min(VIZ_FRAMES - 1, Math.floor(v * VIZ_FRAMES));
+                const srcX = frameIndex * FRAME_W;
+                const destX = i * (DISPLAY_W + GAP); // use DISPLAY_W not FRAME_W
 
-            const h = svgH;
-            const w = svgW;
-            const barWidth = (w / levels.length) | 0;
-
-            for (let i = 0; i < levels.length; i++) 
-            {
-                const v = bound(levels[i].value, 0, 1);
-                const bh = v * h;
-                svgBars[i].setAttribute("y", h - bh);
-                svgBars[i].setAttribute("height", bh);
-                svgBars[i].setAttribute("x", i * barWidth);
-                svgBars[i].setAttribute("width", Math.max(1, barWidth - 2));
+                vizCtx.drawImage(
+                    vizSprite,
+                    srcX, 0, FRAME_W, FRAME_H,        // source: full sprite frame
+                    destX, 0, DISPLAY_W, DISPLAY_H    // dest: scaled to fit
+                );
             }
         }
+
+        // --- start loop only after sprite loads ---
+        vizSprite.onload = () => draw();
+        vizSprite.src = 'viz.png';
 
         function bound(Value, Min, Max)
         {
