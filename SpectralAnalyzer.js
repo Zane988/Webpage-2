@@ -1,19 +1,201 @@
 "use strict";
+var MathType;
+(function (MathType) {
+    MathType[MathType["Round"] = 0] = "Round";
+    MathType[MathType["Floor"] = 1] = "Floor";
+    MathType[MathType["Ceil"] = 2] = "Ceil";
+    MathType[MathType["Cast"] = 3] = "Cast";
+})(MathType || (MathType = {}));
+class SpectralAnalyzer {
+    minDb = -70;
+    maxDb = -20;
 
-// ─── AnalyzerNode2 (unchanged — must stay on main thread, uses Web Audio API) ─
+    maxDecibels = -30;
+    minDecibels = -100;
+
+    fftN = 4096;
+    minFreq = 50;
+    maxFreq = 22000;
+    audioClip;
+    audioSource;
+    barCount = 0;
+    smoothingTimeConstant = 0.0;
+    peakHold = 0;
+    _minDb = -70;
+    _maxDb = -20;
+    _fftN = 4096;
+    fftN2 = 2048;
+    htmlAnalyzer;
+    bars = [];
+    freqToBin(freq, mathType = MathType.Round) {
+        let bin = freq * this.fftN2 / this.audioClip.sampleRate;
+        switch (mathType) {
+            case MathType.Round:
+                return Math.round(bin);
+            case MathType.Floor:
+                return Math.floor(bin);
+            case MathType.Ceil:
+                return Math.ceil(bin);
+            case MathType.Cast:
+                return bin | 0;
+        }
+    }
+    normalizedB(value) {
+        const maxValue = this.maxDb;
+        const minValue = this.minDb;
+        return this.clamp((value - minValue) / (maxValue - minValue), 0, 1);
+    }
+    calcBars(barCount, peakHold) {
+        this.bars = [];
+
+        const logStep = (Scaling.freqScaleLog(this.maxFreq) - Scaling.freqScaleLog(this.minFreq)) / barCount;
+
+        for (let i = 0; i < barCount; i++) {
+            const freqLo = Scaling.invFreqScaleLog(Scaling.freqScaleLog(this.minFreq) + (logStep * i));
+            const freqHi = Scaling.invFreqScaleLog(Scaling.freqScaleLog(this.minFreq) + (logStep * (i + 1)));
+
+            const binLo = this.freqToBin(freqLo, MathType.Floor);
+            const binHi = this.freqToBin(freqHi, MathType.Round);
+
+            this.bars.push({
+                binLo: binLo,
+                binHi: binHi,
+                freqLo: freqLo,
+                freqHi: freqHi,
+                recentValues: new RecentPeakFinder(peakHold)
+            });
+        }
+
+        if (this.bars[0].freqLo < this.minFreq) {
+            this.bars[0].freqLo = this.minFreq;
+            this.bars[0].binLo = this.freqToBin(this.minFreq, MathType.Floor);
+        }
+
+        if (this.bars[this.bars.length - 1].freqHi > this.maxFreq) {
+            this.bars[this.bars.length - 1].freqHi = this.maxFreq;
+            this.bars[this.bars.length - 1].binHi = this.freqToBin(this.maxFreq, MathType.Round);
+        }
+    }
+    clamp(val, min, max) {
+        return val <= min ? min : val >= max ? max : val;
+    }
+    constructor(audioSource, barCount, smoothingTimeConstant = 0.8, peakHold = 30, fft = 2048) {
+        this.audioSource = audioSource;
+        this.audioClip = audioSource.context;
+        this.barCount = barCount;
+        this.smoothingTimeConstant = smoothingTimeConstant;
+        this.peakHold = peakHold;
+
+        this.htmlAnalyzer = new AnalyzerNode2(audioSource, fft, this.smoothingTimeConstant);
+        this.fftN2 = this.htmlAnalyzer.fftSize;
+        this.calcBars(barCount, peakHold);
+
+    }
+    getLevels(levels) {
+        if (!levels)
+            levels = [];
+        const amplitudes = this.htmlAnalyzer.getFloatFrequencyData();
+        
+        for (let i = 0; i < this.bars.length; i++) {
+            var bar = this.bars[i];
+            var binLo = bar.binLo;
+            var binHi = bar.binHi;
+            let value = this.minDb;
+            for (let j = binLo; j <= binHi; j++) {
+                const s = amplitudes[j | 0];
+                if (isFinite(s)) value = Math.max(value, s);
+            }
+            value = this.normalizedB(value);
+            bar.recentValues.push(value);
+            const recentPeak = bar.recentValues.peak;
+            if (levels[i] != null) {
+                levels[i].value = value;
+                levels[i].peak = recentPeak;
+            }
+            else
+                levels.push({ value: value, peak: recentPeak });
+        }
+        return levels;
+    }
+}
+class RecentPeakFinder {
+    constructor(length = 30) {
+        this.buffer = new Float32Array(length); // Use TypedArray
+        this.length = length;
+        this.bufferIndex = 0;
+        this._peak = 0;
+    }
+
+    push(value) {
+        const oldValue = this.buffer[this.bufferIndex];
+        this.buffer[this.bufferIndex] = value;
+
+        if (value >= this._peak) {
+            // New value is higher than current peak: Easy update
+            this._peak = value;
+        } else if (oldValue === this._peak) {
+            // The value we just removed WAS the peak: We must find the new max
+            let max = 0;
+            for (let i = 0; i < this.length; i++) {
+                if (this.buffer[i] > max) max = this.buffer[i];
+            }
+            this._peak = max;
+        }
+        
+        this.bufferIndex = (this.bufferIndex + 1) % this.length;
+    }
+
+    get peak() {
+        return this._peak;
+    }
+}
+class Signal {
+    static max(y) {
+        return y.reduce((a, b) => Math.max(a, b), y[0]);
+    }
+}
+class LogHelper {
+    static log2(x) {
+        return Math.log(x) / Math.log(2);
+    }
+    static log10(x) {
+        return Math.log(x) / Math.log(10);
+    }
+}
+class Scaling {
+    static freqScaleMel(freq) {
+        return LogHelper.log2(1 + freq / 700);
+    }
+    static invFreqScaleMel(x) {
+        return 700 * Math.pow(2, x - 1);
+    }
+    static freqScaleBark(freq) {
+        return (26.81 * freq) / (1960 + freq) - 0.53;
+    }
+    static invFreqScaleBark(x) {
+        return 1960 / (26.81 / (x + 0.53) - 1);
+    }
+    static freqScaleLog(freq) {
+        return LogHelper.log10(1 + freq / 1000);
+    }
+
+    static invFreqScaleLog(x) {
+        return 1000 * (Math.pow(10, x) - 1);
+    }
+}
 
 class AnalyzerNode2 {
-    #fftSize;
-    #dataArray;
+    #fftSize
+    #dataArray
 
     constructor(source, fft = 2048, stc = 0.8) {
-        this.context  = source.context;
+        this.context = source.context;
         this.#fftSize = AnalyzerNode2.#nextPow2(fft);
         this.analyzer = this.context.createAnalyser();
 
-        this.analyzer.fftSize               = this.#fftSize;
-        this.analyzer.minDecibels           = -70;
-        this.analyzer.maxDecibels           = -20;
+        this.analyzer.fftSize = this.#fftSize;
+        this.analyzer.minDecibels = -70;
+        this.analyzer.maxDecibels = -20;
         this.analyzer.smoothingTimeConstant = stc;
 
         this.#dataArray = new Float32Array(this.analyzer.frequencyBinCount);
@@ -27,161 +209,14 @@ class AnalyzerNode2 {
         return Math.min(pow, 32768);
     }
 
-    get fftSize() { return this.#fftSize; }
+    get fftSize() {
+        return this.#fftSize;
+    }
 
     getFloatFrequencyData() {
+        
+        
         this.analyzer.getFloatFrequencyData(this.#dataArray);
         return this.#dataArray;
-    }
-}
-
-// ─── SpectralAnalyzer ─────────────────────────────────────────────────────────
-//
-//  What moved to the Worker (spectral.worker.js):
-//    • calcBars()         — log-scale frequency math, runs once on init
-//    • RecentPeakFinder   — rolling peak tracking
-//    • processLevels()    — per-frame bin iteration + normalisation
-//
-//  What stays here (needs Web Audio API / DOM):
-//    • AnalyzerNode2 construction
-//    • getFloatFrequencyData() call  ← AnalyserNode is main-thread only
-//    • Transferring the Float32Array to the worker each frame
-//
-// ─────────────────────────────────────────────────────────────────────────────
-
-class SpectralAnalyzer {
-    minDb    = -70;
-    maxDb    = -20;
-    minFreq  = 50;
-    maxFreq  = 22000;
-
-    // Resolved when the worker signals it is ready
-    #ready   = false;
-    #worker  = null;
-
-    // Last levels received from the worker (used by draw loop)
-    #levels  = [];
-
-    // Pending resolve for one-shot getLevels() callers, if needed
-    #onLevels = null;
-
-    /**
-     * @param {AudioNode}  audioSource
-     * @param {number}     barCount
-     * @param {number}     smoothingTimeConstant
-     * @param {number}     peakHold
-     * @param {number}     fft
-     * @param {string}     workerUrl  path to spectral.worker.js
-     */
-    constructor(
-        audioSource,
-        barCount,
-        smoothingTimeConstant = 0.8,
-        peakHold              = 30,
-        fft                   = 2048,
-        workerUrl             = 'spectral.worker.js'
-    ) {
-        this.audioSource = audioSource;
-        this.audioClip   = audioSource.context;
-        this.barCount    = barCount;
-
-        // Web Audio node — must stay on main thread
-        this.htmlAnalyzer = new AnalyzerNode2(audioSource, fft, smoothingTimeConstant);
-
-        // Spawn the worker and hand it everything it needs to replicate calcBars
-        this.#worker = new Worker(workerUrl);
-
-        this.#worker.onmessage = (e) => this.#handleWorkerMessage(e);
-
-        this.#worker.postMessage({
-            type: 'init',
-            payload: {
-                barCount,
-                peakHold,
-                minFreq:    this.minFreq,
-                maxFreq:    this.maxFreq,
-                fftSize:    this.htmlAnalyzer.fftSize / 2,   // frequencyBinCount
-                sampleRate: this.audioClip.sampleRate,
-                minDb:      this.minDb,
-                maxDb:      this.maxDb,
-            }
-        });
-    }
-
-    // ── Internal ──────────────────────────────────────────────────────────────
-
-    #handleWorkerMessage({ data }) {
-        if (data.type === 'ready') {
-            this.#ready = true;
-            return;
-        }
-        if (data.type === 'levels') {
-            this.#levels = data.levels;
-            if (this.#onLevels) {
-                this.#onLevels(this.#levels);
-                this.#onLevels = null;
-            }
-        }
-    }
-
-    /**
-     * Send the current frequency snapshot to the worker for processing.
-     * Non-blocking — results arrive in the next worker message.
-     *
-     * Call this every animation frame (replaces the old getLevels() loop).
-     */
-    sendFrame() {
-        if (!this.#ready) return;
-
-        // Get raw data from the AnalyserNode (main thread only)
-        const src = this.htmlAnalyzer.getFloatFrequencyData();
-
-        // Copy into a new buffer so we can transfer ownership to the worker
-        // (zero-copy transfer — no serialisation cost)
-        const copy = new Float32Array(src);
-        this.#worker.postMessage(
-            { type: 'process', payload: { data: copy } },
-            [copy.buffer]   // transfer ownership
-        );
-    }
-
-    /**
-     * Returns the most recently computed levels array synchronously.
-     * Call sendFrame() first each frame, then read this on the NEXT frame
-     * (or whenever the worker has responded).
-     *
-     * Each entry: { value: number [0-1], peak: number [0-1] }
-     */
-    getLevels() {
-        return this.#levels;
-    }
-
-    /**
-     * Convenience: update minFreq / maxFreq after construction.
-     * Reinitialises the worker bars.
-     */
-    updateFreqRange(minFreq, maxFreq) {
-        this.minFreq = minFreq;
-        this.maxFreq = maxFreq;
-        if (this.#ready) {
-            this.#ready = false;
-            this.#worker.postMessage({
-                type: 'init',
-                payload: {
-                    barCount:   this.barCount,
-                    peakHold:   0,   // reset — caller can store peakHold if needed
-                    minFreq,
-                    maxFreq,
-                    fftSize:    this.htmlAnalyzer.fftSize / 2,
-                    sampleRate: this.audioClip.sampleRate,
-                    minDb:      this.minDb,
-                    maxDb:      this.maxDb,
-                }
-            });
-        }
-    }
-
-    terminate() {
-        this.#worker.terminate();
     }
 }
