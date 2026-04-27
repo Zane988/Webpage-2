@@ -1035,7 +1035,7 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, 256);
+                    analyzer = new SpectralAnalyzer(source, 7, 0.1, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 64 : 256);
                 }
             }
         }
@@ -1291,9 +1291,7 @@
             totTimeEl.innerText = formatTime(musicEngine.duration);
 
             document.getElementById('progress-dot').style.left = p + "%";
-        })
 
-        setInterval(() => {
             if (videoEngine && !isVideoSeeking) 
             {
                 const diff = Math.abs(videoEngine.currentTime - musicEngine.currentTime);
@@ -1302,7 +1300,7 @@
                     videoEngine.currentTime = musicEngine.currentTime;
                 }
             }
-        }, 1)
+        })
 
         musicEngine.onended = () => {
             if(repet === 0) 
