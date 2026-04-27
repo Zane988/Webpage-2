@@ -86,7 +86,7 @@ class SpectralAnalyzer {
         this.smoothingTimeConstant = smoothingTimeConstant;
         this.peakHold = peakHold;
 
-        this.htmlAnalyzer = new AnalyzerNode2(audioSource, fft);
+        this.htmlAnalyzer = new AnalyzerNode2(audioSource, fft, this.smoothingTimeConstant);
         this.fftN2 = this.htmlAnalyzer.fftSize;
         this.calcBars(barCount, peakHold);
 
@@ -187,7 +187,7 @@ class AnalyzerNode2 {
     #fftSize
     #dataArray
 
-    constructor(source, fft = 2048) {
+    constructor(source, fft = 2048, stc = 0.8) {
         this.context = source.context;
         this.#fftSize = AnalyzerNode2.#nextPow2(fft);
         this.analyzer = this.context.createAnalyser();
@@ -195,7 +195,7 @@ class AnalyzerNode2 {
         this.analyzer.fftSize = this.#fftSize;
         this.analyzer.minDecibels = -70;
         this.analyzer.maxDecibels = -20;
-        this.analyzer.smoothingTimeConstant = 0.1;
+        this.analyzer.smoothingTimeConstant = stc;
 
         this.#dataArray = new Float32Array(this.analyzer.frequencyBinCount);
         source.connect(this.analyzer);
