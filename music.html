@@ -1488,31 +1488,37 @@
         const canvas = document.getElementById("visualizer");
         const ctx = canvas.getContext("2d");
 
-        function resizeCanvas() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-        }
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
+        let resizePending = false;
+        window.addEventListener("resize", () => {
+            if (!resizePending) {
+                resizePending = true;
+                requestAnimationFrame(() => {
+                    canvas.width = canvas.offsetWidth;
+                    canvas.height = canvas.offsetHeight;
+                    resizePending = false;
+                });
+            }
+        });
 
-        function draw() 
-        {
+        // 2. Set fillStyle ONCE outside the loop — huge win
+        function draw() {
             requestAnimationFrame(draw);
 
             if (!analyzer) return;
 
             const levels = analyzer.getLevels(audioLevels);
+            const w = canvas.width;
+            const h = canvas.height;
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, w, h);
 
-            const barWidth = canvas.width / levels.length;
-            //console.log(levels.length);
-            //console.log(levels.map(v => v.value));
+            const barWidth = w / levels.length;
+            ctx.fillStyle = "white"; // ← moved outside the loop
+
             for (let i = 0; i < levels.length; i++) {
                 const v = bound(levels[i].value, 0, 1);
-                const h = v * canvas.height;
-                ctx.fillStyle = "white";
-                ctx.fillRect(i * barWidth, canvas.height - h, barWidth - 2, h);
+                const bh = v * h;
+                ctx.fillRect(i * barWidth, h - bh, barWidth - 2, bh);
             }
         }
 
