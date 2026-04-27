@@ -60,6 +60,15 @@
             "lrc": "lyrics/maybe-this-time"
         },
         {
+            "name": "Yoka ni Mitorete",
+            "author": "Nightcord at 25:00 ( Our Anniversary Song :( I'll listn to this.. )",
+            "file": "songs/yoka.mp3",
+            "icon": "songs/icon/icon-yoka",
+            "color": "#FF64E5",
+            "lrc": "lyrics/yoka",
+            "video":"video/video-yoka.mp4"
+        },
+        {
             "name": "MASK (Gangle's Song) Feat. Marissa Lenti",
             "author": "Gabe & Nate brown (Black Gryph0n & Baasik), Max Vernon",
             "file": "songs/mask.mp3",
