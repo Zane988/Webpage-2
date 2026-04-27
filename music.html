@@ -817,23 +817,21 @@
             position: fixed;
             top: 80px;
             right: 10px;
-            width: 300px;
-            max-height: 40vh;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.8);
+            max-width: 320px;
+            background: rgba(0,0,0,0.75);
             border: 1px solid #555;
-            border-radius: 8px;
-            padding: 8px 10px;
+            border-radius: 6px;
+            padding: 5px 10px;
             font-family: monospace;
             font-size: 11px;
             color: #eee;
             z-index: 9999;
             pointer-events: none;
+            white-space: pre-wrap;
+            word-break: break-all;
         }
-        #debug-log .dl { margin: 2px 0; white-space: pre-wrap; word-break: break-all; }
-        #debug-log .dl-warn { color: #f5c842; }
-        #debug-log .dl-err  { color: #f55; }
-        #debug-log .dl-info { color: #7cf; }
+        .dl-warn { color: #f5c842; }
+        .dl-err  { color: #f55; }
      </style>
  </head>
 
@@ -841,27 +839,10 @@
     <div id="debug-log"></div>
     <script>
         const _debugLog = document.getElementById('debug-log');
-        const _debugMax = 60;
-        function _printLine(text, cls) {
-            const last = _debugLog.lastChild;
-            if (last && last._text === text) {
-                last._count = (last._count || 1) + 1;
-                last.textContent = text + (last._count > 1 ? ` ×${last._count}` : '');
-                return;
-            }
-            const line = document.createElement('div');
-            line.className = 'dl' + (cls ? ' ' + cls : '');
-            line.textContent = text;
-            line._text = text;
-            line._count = 1;
-            _debugLog.appendChild(line);
-            while (_debugLog.children.length > _debugMax) _debugLog.removeChild(_debugLog.firstChild);
-            _debugLog.scrollTop = _debugLog.scrollHeight;
-        }
         const _fmt = (...args) => args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
-        function print(...args) { _printLine(_fmt(...args)); }
-        function warn(...args)  { _printLine(_fmt(...args), 'dl-warn'); }
-        function err(...args)   { _printLine(_fmt(...args), 'dl-err'); }
+        function print(...args) { _debugLog.className = 'dl';      _debugLog.textContent = _fmt(...args); }
+        function warn(...args)  { _debugLog.className = 'dl-warn'; _debugLog.textContent = _fmt(...args); }
+        function err(...args)   { _debugLog.className = 'dl-err';  _debugLog.textContent = _fmt(...args); }
     </script>
     <div id="music">
         <div class="nav-wrapper">
@@ -1083,7 +1064,7 @@
 
                 if (!analyzer) 
                 {
-                    analyzer = new SpectralAnalyzer(source, 7, 0.8, (mobileQuery.matches) ? 5 : 40, (mobileQuery.matches) ? 1024 : 1024);
+                    analyzer = new SpectralAnalyzer(source, 7, 0.5, (mobileQuery.matches) ? 2 : 40, (mobileQuery.matches) ? 512 : 256);
                 }
             }
         }
@@ -1564,7 +1545,7 @@
 
             const levels = analyzer.getLevels(audioLevels);
             if (!levels || levels.length === 0) return;
-            print(levels)
+
             if (levels.length !== vizCount) initViz(levels.length);
 
             const h = vizH, bw = vizBarW, gap = bw > 3 ? 2 : 0;
