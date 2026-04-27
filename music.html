@@ -94,6 +94,11 @@
             display: none;
         }
 
+        @keyframes grid-scroll {
+            from { background-position: 0 0, 0 0, 0 0, 0 0; }
+            to   { background-position: 0 600px, 600px 0, 0 240px, 240px 0; }
+        }
+
         .grid-bg {
             position: fixed;
             inset: 0;
@@ -105,6 +110,7 @@
                 repeating-linear-gradient(0deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 25px),
                 repeating-linear-gradient(90deg, rgba(255,255,255,0.01) 0 1px, transparent 1px 40px);
             background-size: 20% 20%;
+            animation: grid-scroll 80s linear infinite;
         }
 
         .music-row { margin-top: 50px; display: flex; justify-content: center; align-items: center; gap: 10px; }
@@ -1352,16 +1358,8 @@
             return min + ":" + sec;
         }
 
-        //pls i hate this idk how to put it in single foeelarafaaf
-        const grid = document.querySelector(".grid-bg");
-        let x = 0, y = 0;
+        // grid animation moved to CSS — no JS needed
         let animFrameId = null;
-        function animate() {
-            x += 0.12; y += 0.1;
-            grid.style.backgroundPosition = `0 ${y}px,${x}px 0,0 ${y * 0.4}px,${x * 0.4}px 0`;
-            animFrameId = requestAnimationFrame(animate);
-        }
-        animate();
         
         //Hell
         function randomizeGradients() 
@@ -1428,12 +1426,12 @@
 
             if (document.hidden) {
                 console.log("SSSSSSSSSS")
-                // Pause background animations to free up CPU
+                // Pause canvas loop to free up CPU (grid now runs via CSS)
                 cancelAnimationFrame(animFrameId);
                 clearInterval(gradientInterval);
             } else {
-                // Resume animations
-                animate();
+                // Resume canvas loop
+                mainLoop(performance.now());
                 console.log("SSSSSSSSSSssssssssssss")
                 gradientInterval = setInterval(randomizeGradients, 1500);
                 resyncVideo();
@@ -1444,7 +1442,6 @@
             resyncVideo();
             console.log("A")
         });
-
 
         const container = document.querySelector('.playlist-main');
 
@@ -1516,9 +1513,18 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        function draw() 
+        // ── Single unified RAF loop — canvas throttled to 30fps ──────────────
+        const CANVAS_INTERVAL = 1000 / 30; // 30fps cap
+        let lastCanvasTime = 0;
+
+        function mainLoop(timestamp)
         {
-            requestAnimationFrame(draw);
+            animFrameId = requestAnimationFrame(mainLoop);
+
+            // Throttle canvas draw to 30fps
+            if (timestamp - lastCanvasTime < CANVAS_INTERVAL) return;
+            lastCanvasTime = timestamp;
+
             if (!analyzer || !vizSprite.complete) return;
 
             const levels = analyzer.getLevels(audioLevels);
@@ -1532,13 +1538,12 @@
                 let v = lvl.value;
                 if (v > 1) v = 1; else if (v < 0) v = 0;
 
-                const frameIndex = (v * (VIZ_FRAMES - 1)) | 0; 
-                
+                const frameIndex = (v * (VIZ_FRAMES - 1)) | 0;
                 vizCtx.drawImage(vizSprite, frameIndex * FRAME_W, 0, FRAME_W, FRAME_H, i * frameWidthWithGap, 0, FRAME_W, FRAME_H);
             }
         }
 
-        vizSprite.onload = () => draw();
+        vizSprite.onload = () => mainLoop(performance.now());
         vizSprite.src = 'viz.png';
 
         function bound(Value, Min, Max)
