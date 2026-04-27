@@ -1424,13 +1424,15 @@
 
         document.addEventListener("visibilitychange", (e) => {
 
-            if (document.hidden) {
+            if (document.hidden) 
+            {
                 console.log("SSSSSSSSSS")
-                // Pause canvas loop to free up CPU (grid now runs via CSS)
+
                 cancelAnimationFrame(animFrameId);
                 clearInterval(gradientInterval);
-            } else {
-                // Resume canvas loop
+            } 
+            else 
+            {
                 mainLoop(performance.now());
                 console.log("SSSSSSSSSSssssssssssss")
                 gradientInterval = setInterval(randomizeGradients, 1500);
@@ -1513,15 +1515,13 @@
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
-        // ── Single unified RAF loop — canvas throttled to 30fps ──────────────
-        const CANVAS_INTERVAL = 1000 / 30; // 30fps cap
+        const CANVAS_INTERVAL = 1000 / 60;
         let lastCanvasTime = 0;
 
         function mainLoop(timestamp)
         {
             animFrameId = requestAnimationFrame(mainLoop);
 
-            // Throttle canvas draw to 30fps
             if (timestamp - lastCanvasTime < CANVAS_INTERVAL) return;
             lastCanvasTime = timestamp;
 
