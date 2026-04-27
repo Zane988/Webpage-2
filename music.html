@@ -1493,12 +1493,24 @@
             if (!resizePending) {
                 resizePending = true;
                 requestAnimationFrame(() => {
-                    canvas.width = canvas.offsetWidth;
-                    canvas.height = canvas.offsetHeight;
+                    canvas.width = window.innerWidth /2;
+                    canvas.height = window.innerHeight/2;
+                    canvas.style.width = "100vw";
+                    canvas.style.height = "100vh";
                     resizePending = false;
                 });
             }
         });
+
+        function cnvs()
+        {
+            canvas.width = window.innerWidth /2;
+                    canvas.height = window.innerHeight/2;
+                    canvas.style.width = "100vw";
+                    canvas.style.height = "100vh";
+        }
+
+        cnvs()
         setInterval(draw, 1)
         function draw() {
             
@@ -1510,13 +1522,13 @@
 
             ctx.clearRect(0, 0, w, h);
 
-            const barWidth = w / levels.length;
+            const barWidth = (w / levels.length) | 0;
             ctx.fillStyle = "white"; // ← moved outside the loop
 
             for (let i = 0; i < levels.length; i++) {
                 const v = bound(levels[i].value, 0, 1);
                 const bh = v * h;
-                ctx.fillRect(i * barWidth, h - bh, barWidth - 2, bh);
+                ctx.fillRect((i * barWidth) | 0, (h - bh) | 0, (barWidth - 2) | 0, bh | 0);
             }
         }
 
