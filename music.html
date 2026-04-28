@@ -327,16 +327,31 @@
             width: 490px;
             height: 290px;
             border-radius: 15px;
-            background: rgba(235, 235, 235, 0.095);
+            background: #000;
             border: 1px solid #858585;
             
             display: flex;
             flex-direction: column;
-            align-items: center; 
+            align-items: center;
+            justify-content: center;
             text-align: center;
             padding: 20px;
             
             z-index: 1;
+            overflow: hidden;
+        }
+
+        .no-video-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 0.08em;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .box-selection-bg.has-video .no-video-label {
+            display: none;
         }
 
         .box-header {
@@ -968,7 +983,7 @@
             </div>
 
             <div class="box-selection-bg">
-                
+                <span class="no-video-label">No Video</span>
             </div>
         </div>
 
@@ -1036,11 +1051,16 @@
                     updateGlowColor('#222')
                 }
                 
-                if (song.video && mobileQuery.matches) {
+                if (song.video) 
+                {
                     hasVideo = true;
                     loadVideo(song.video);
-                } else {
+                    document.querySelector('.box-selection-bg').classList.add('has-video');
+                } 
+                else 
+                {
                     hasVideo = false;
+                    document.querySelector('.box-selection-bg').classList.remove('has-video');
                 }
 
                 const coverl = document.querySelector('.box-music-cover');
@@ -1261,15 +1281,30 @@
         {
             const musicBox = document.querySelector('.box-music-bg');
 
-            if (!hasVideo || !mobileQuery.matches) 
+            if (!hasVideo) 
             {
                 musicBox.style.opacity = 1;
                 if (videoEngine) videoEngine.style.opacity = 0;
                 return;
             }
 
-            musicBox.style.opacity = isPlaying ? 0 : 1;
-            videoEngine.style.opacity = isPlaying ? 1 : 0;
+            if (mobileQuery.matches) 
+            {
+                // Mobile: fade music box out, show video as bg
+                musicBox.style.opacity = isPlaying ? 0 : 1;
+                videoEngine.style.opacity = isPlaying ? 1 : 0;
+            } 
+            else 
+            {
+                // Desktop: music box always visible; video shows inside .box-selection-bg
+                musicBox.style.opacity = 1;
+                videoEngine.style.opacity = isPlaying ? 1 : 0;
+            }
+        }
+
+        function getVideoContainer() 
+        {
+            return mobileQuery.matches ? document.querySelector(".bg-video") : document.querySelector(".box-selection-bg");
         }
 
         function loadVideo(src) 
@@ -1298,12 +1333,26 @@
                 videoEngine.style.opacity = "0";
                 videoEngine.style.transition = "0.4s ease";
 
+                videoEngine.style.borderRadius = "15px";
+            }
+
+            const targetContainer = getVideoContainer();
+            if (videoEngine.parentElement !== targetContainer) 
+            {
+                targetContainer.appendChild(videoEngine);
+            }
+
+            if (mobileQuery.matches) 
+            {
                 videoEngine.style.webkitMaskImage = "linear-gradient(to bottom, black 10%, transparent 80%)";
                 videoEngine.style.maskImage = "linear-gradient(to bottom, black 10%, transparent 80%)";
-
                 videoEngine.style.filter = "blur(1.5px)";
-
-                document.querySelector(".bg-video").appendChild(videoEngine);
+            } 
+            else 
+            {
+                videoEngine.style.webkitMaskImage = "";
+                videoEngine.style.maskImage = "";
+                videoEngine.style.filter = "";
             }
 
             videoEngine.pause();
@@ -1407,12 +1456,27 @@
 
         let gradientInterval = setInterval(randomizeGradients, 1500);
 
-        window.addEventListener('resize', () => {
-            handleMarquee(songNameEl);
-            handleMarquee(songAuthorEl);
-        });
-
         mobileQuery.addEventListener("change", () => {
+            if (videoEngine && hasVideo) 
+            {
+                const targetContainer = getVideoContainer();
+                if (videoEngine.parentElement !== targetContainer) 
+                {
+                    targetContainer.appendChild(videoEngine);
+                }
+                if (mobileQuery.matches) 
+                {
+                    videoEngine.style.webkitMaskImage = "linear-gradient(to bottom, black 10%, transparent 80%)";
+                    videoEngine.style.maskImage = "linear-gradient(to bottom, black 10%, transparent 80%)";
+                    videoEngine.style.filter = "blur(1.5px)";
+                } 
+                else 
+                {
+                    videoEngine.style.webkitMaskImage = "";
+                    videoEngine.style.maskImage = "";
+                    videoEngine.style.filter = "";
+                }
+            }
             showVideo();
         });
 
@@ -1525,7 +1589,7 @@
             const isMobile = mobileQuery.matches;
 
             FRAME_W  = isMobile ? 34 : 69;
-            FRAME_X  = isMobile ? [0,34,68,102,136,170] : [0,69,138,207,276,345];
+            FRAME_X  = isMobile ? [0,34,69,104,138,170] : [0,69,138,207,276,345];
 
             const frameH   = isMobile ? 158 : 316;
             const bgSize   = isMobile ? '256px 256px' : '512px 512px';
@@ -1580,6 +1644,9 @@
         window.addEventListener("resize", (e) => {
             barEls = []
             initAnalyzer()
+
+            handleMarquee(songNameEl);
+            handleMarquee(songAuthorEl);
         })
 
         function bound(Value, Min, Max)
