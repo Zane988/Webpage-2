@@ -25,11 +25,7 @@
             background: linear-gradient(180deg, #000000 20%, #0e0f13 60%);
             background-attachment: fixed; 
             min-height: 100vh;
-            
-            display: flex;
-            flex-direction: column;
-            align-items: center; 
-            
+        
             font-family: Arial, sans-serif;
             color: white;
             padding: 40px;
@@ -117,6 +113,77 @@
 
             will-change: transform;
             background-size: 20% 20%;
+        }
+
+        .img-carousel {
+            position: relative; 
+            margin: -20px 0 50px;
+            overflow-x: auto;
+            width: 100%;
+            display: flex;
+            padding-top: 20px;
+            padding-bottom: 20px;
+
+            transform: translateX(-50%);
+
+            left: 50%;
+
+            -webkit-mask-image: linear-gradient(
+                to right,
+                transparent,
+                black 15%,
+                black 100%,
+                transparent
+            );
+            mask-image: linear-gradient(
+                to right,
+                transparent,
+                black 15%,
+                black 85%,
+                transparent
+            );
+        }
+        .img-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .img-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1em;
+
+            animation: spin 25s infinite linear;
+            padding-right: 1em;
+        }
+
+        .image-cards {
+            display: block;
+            break-inside: avoid; 
+            width: auto;        /* was: 100% */
+            flex: 0 0 auto;     /* was: 0 0 5em */
+            height: 10em;
+            padding: 0;         /* was: 1em  ← this was the main culprit */
+            border-radius: 25px;
+            transition: all 0.3s ease-in-out;
+            align-content: center;
+            text-align: center;
+        }
+        .image-cards:active {
+            filter: blur(3px);
+        }
+        .image-cards:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 2px #fff;
+        }
+
+        @keyframes spin {
+            from {
+                translate: 0;
+            }
+            to {
+                translate: -100%;
+            }
         }
 
         .box-wrapper {
@@ -295,6 +362,10 @@
             .img-format {
                 margin-bottom: 10px;
             }
+
+            .img-carousel {
+                width: 110%;
+            }
         }
      </style>
  </head>
@@ -329,6 +400,27 @@
         </div>
 
         <div class="grid-bg"></div>
+
+        <div class="img-carousel">
+            <div class="img-group">
+                <img src="ipis.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me2.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="tambo.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me1.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me2.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me4.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me3.jpg" alt="Gallery Image 1" class="image-cards">
+            </div>
+            <div aria-hidden class="img-group">
+                <img src="ipis.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me2.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="tambo.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me1.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me2.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me4.jpg" alt="Gallery Image 1" class="image-cards">
+                <img src="me3.jpg" alt="Gallery Image 1" class="image-cards">
+            </div>
+        </div>
 
         <div class="box-wrapper">
             <div class="gallery-container">
@@ -375,8 +467,16 @@
         const lightbox = document.getElementById('lightbox');
         const bigImg = document.getElementById('big-img');
         const galleryImages = document.querySelectorAll('.img-format');
+        const carouselImages = document.querySelectorAll('.image-cards');
 
         galleryImages.forEach(image => {
+            image.addEventListener('click', () => {
+                bigImg.src = image.src; 
+                lightbox.classList.add('active'); 
+            });
+        });
+
+        carouselImages.forEach(image => {
             image.addEventListener('click', () => {
                 bigImg.src = image.src; 
                 lightbox.classList.add('active'); 
