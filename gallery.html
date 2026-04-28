@@ -121,8 +121,8 @@
             overflow-x: auto;
             width: 100%;
             display: flex;
-            padding-top: 20px;
-            padding-bottom: 20px;
+            padding-top: 90px;
+            padding-bottom: 5px;
 
             transform: translateX(-50%);
 
@@ -160,14 +160,16 @@
         .image-cards {
             display: block;
             break-inside: avoid; 
-            width: auto;        /* was: 100% */
-            flex: 0 0 auto;     /* was: 0 0 5em */
+            flex: 0 0 5em;
             height: 10em;
-            padding: 0;         /* was: 1em  ← this was the main culprit */
             border-radius: 25px;
             transition: all 0.3s ease-in-out;
             align-content: center;
             text-align: center;
+
+            margin-right: 2em;
+
+            z-index: 0;
         }
         .image-cards:active {
             filter: blur(3px);
@@ -365,6 +367,8 @@
 
             .img-carousel {
                 width: 110%;
+                padding-top: 20px;
+                padding-bottom: 20px;
             }
         }
      </style>
