@@ -1290,13 +1290,11 @@
 
             if (mobileQuery.matches) 
             {
-                // Mobile: fade music box out, show video as bg
                 musicBox.style.opacity = isPlaying ? 0 : 1;
                 videoEngine.style.opacity = isPlaying ? 1 : 0;
             } 
             else 
             {
-                // Desktop: music box always visible; video shows inside .box-selection-bg
                 musicBox.style.opacity = 1;
                 videoEngine.style.opacity = isPlaying ? 1 : 0;
             }
