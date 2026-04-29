@@ -212,7 +212,46 @@
         .img-left img {
             -webkit-mask-image: linear-gradient(to left, transparent 10%, black 70%);
             mask-image: linear-gradient(to left, transparent 10%, black 70%);
-            
+        }
+
+        .img-left,
+        .img-right {
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out, transform 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .img-left  { transform: translateX(-40px); }
+        .img-right { transform: translateX(40px); }
+
+        .img-left.visible,
+        .img-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .text-left,
+        .text-right {
+            opacity: 0;
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+
+        .text-left  { transform: translateX(40px); }
+        .text-right { transform: translateX(-40px); }
+
+        .text-left.visible,
+        .text-right.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .ball-reveal {
+            opacity: 0;
+            transform: translateY(100px);
+            transition: opacity 0.8s ease, transform 5.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .ball-reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         .photo-crop {
@@ -473,6 +512,32 @@
                 order: 2;
                 text-align: center;
             }
+
+            .img-left,
+            .img-right { 
+                transform: translateX(0); 
+                transform: translateY(30px); 
+            }
+
+            .img-left.visible,
+            .img-right.visible {
+                opacity: 1;
+                transform: translateX(0);
+                transform: translateY(0); 
+            }
+
+            .text-left,
+            .text-right { 
+                transform: translateX(0); 
+                transform: translateY(30px); 
+            }
+
+            .text-left.visible,
+            .text-right.visible {
+                opacity: 1;
+                transform: translateX(0);
+                transform: translateY(0); 
+            }
         }
     </style>
 </head>
@@ -610,13 +675,14 @@
                 </div>
             </div>
 
-            <div class="ball-wrapper">
-                <div class="ball">
-                    <canvas id="fisheyeCanvas"></canvas>
-                    <div class="ball--static"></div>
+            <div class="ball-reveal">
+                <div class="ball-wrapper">
+                    <div class="ball">
+                        <canvas id="fisheyeCanvas"></canvas>
+                        <div class="ball--static"></div>
+                    </div>
                 </div>
             </div>
-
             <br>
             <br>
             <br>
@@ -817,7 +883,8 @@
         let x = 0;
         let y = 0;
 
-        function animate() {
+        function animate() 
+        {
             x += 0.12;  // horizontal speed
             y += 0.1;  // vertical speed
 
@@ -833,6 +900,39 @@
 
         animate();
         
+        const slideObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) 
+                {
+                    entry.target.classList.add('visible');
+                }
+                else
+                {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, {});
+
+        const ballsObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) 
+                {
+                    entry.target.classList.add('visible');
+                }
+                else
+                {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, {});
+
+        document.querySelectorAll('.img-left, .img-right, .text-left, .text-right').forEach(el => {
+            slideObserver.observe(el);
+        });
+
+        document.querySelectorAll('.ball-reveal').forEach(bl => {
+            ballsObserver.observe(bl)
+        })
     </script>
 </body>
 </html>
