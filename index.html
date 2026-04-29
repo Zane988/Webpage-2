@@ -23,7 +23,7 @@
 
         body {
             background: linear-gradient(180deg, #000000 20%, #0e0f13 60%);
-            min-height: 100vh;
+            min-height: 1500px;
             font-family: Arial;
             color: white;
             
@@ -377,7 +377,7 @@
         .toast {
             position: fixed;
             background: rgba(44, 44, 44, 0.5);
-            width: 30%; height: 15%;
+            width: 30%; height: auto;
             border-radius: 15px;
             
             bottom: var(--toast-margin);
@@ -389,7 +389,7 @@
 
             transform: translateX(-20px);
             transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
-
+            height: fit-content;
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.9);
         }
 
@@ -933,7 +933,7 @@
             "You maybe naka move on napo i'm sorry po late kona na napasa po to sayu",
             "POP UP! POP UP! POP UP! RA-TATATATATA TA!"
         ]
-        
+
         const ball = document.querySelector('.ball-wrapper');
 
         ball.addEventListener('click', () => {
