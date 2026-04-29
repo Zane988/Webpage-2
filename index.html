@@ -23,14 +23,14 @@
 
         body {
             background: linear-gradient(180deg, #000000 20%, #0e0f13 60%);
-            min-height: 1500px;
-            font-family: Arial;
+            background-attachment: fixed; 
+            min-height: 100vh;
+        
+            font-family: Arial, sans-serif;
             color: white;
-            
             padding: 40px;
-            line-height: 2;
+            margin: 0;
             overflow-x: hidden;
-            overflow-y: auto;
         }
 
         .nav-wrapper {
@@ -130,20 +130,6 @@
             
             margin-top: 0px;
             margin-bottom: 50px;
-        }
-
-        .box {
-            position: relative;
-            border: 1.35px solid #333;
-            border-radius: 7px;
-            
-            width: 100%;
-
-            min-height: 100vh; 
-            display: flex;
-            flex-direction: column;
-            padding: 20px 40px;
-            box-sizing: border-box;
         }
 
         .Message2 {
@@ -272,6 +258,7 @@
             width: min(30vw, 200px);
             height: min(30vw, 200px);
             margin: 0 auto;
+            z-index: 0;
             animation: float 4s ease-in-out infinite;
         }
 
@@ -318,7 +305,7 @@
                 transform: translateY(0px);
             }
             50% {
-                transform: translateY(-15px); /* Moves the ball up */
+                transform: translateY(-15px);
             }
             100% {
                 transform: translateY(0px);
@@ -336,7 +323,7 @@
 
         /* HEART PARTICLE */
         .heart {
-            position: absolute;
+            position: fixed;
             width: 64px;
             height: 64px;
             pointer-events: none;
@@ -351,6 +338,7 @@
 
             will-change: transform, opacity;
             backface-visibility: hidden;
+            z-index: -1;
 
             animation: heartAnim 0.4s steps(2) infinite, fly 5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
@@ -431,9 +419,170 @@
             font-size: small;
         }
 
+        .art-carousel {
+            width: 85%;
+            overflow-x: auto;
+            margin: 3em auto;
+            display: flex;
+            gap: 1em;
+            scroll-behavior: smooth;
+            anchor-name: --main-carousel;
+            scroll-snap-type: x mandatory;
+            scroll-marker-group: after;
+            box-sizing: content-box;
+        }
+
+        .art-carousel::scroll-marker-group {
+            display: flex;
+            justify-content: center;
+            gap: 1em;
+        }
+
+        .card::scroll-marker {
+            content: '';
+            width: 1em; height: 1em;
+            background-color: #141829;
+            border-radius: 50%;
+        }
+
+        .card::scroll-marker:target-current {
+            background-color: #1e3958;
+        }
+
+        .art-carousel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .art-carousel::scroll-button(right), .art-carousel::scroll-button(left) {
+            content: '→';
+            border: none;
+            background-color: #090e1f;
+            font-family: Consolas;
+            font-size: 1.5em;
+            color: white;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            padding-bottom: .1em;
+            cursor: pointer;
+            position: fixed;
+            position-anchor: --main-carousel;
+            position-area: right center;
+            translate: -50%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .art-carousel::scroll-button(left) {
+            content: '←';
+            position-area: left center;
+            translate: 50%;
+        }
+
+        .art-carousel::scroll-button(right):disabled, .art-carousel::scroll-button(left):disabled {
+            opacity: 0.5;
+            cursor:auto;
+        }
+
+        .card {
+            scroll-snap-align: start;
+            flex: 0 0 25%;
+            aspect-ratio: 6 / 3;
+            border-radius: .5em;
+            background: #e0e0e0;
+            align-content: center;
+            overflow: hidden;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: .5em;
+            display: block;
+        }
+
+        .lightbox {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            pointer-events: none;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.4s ease, backdrop-filter 0.4s ease;
+        }
+
+        .lightbox-content {
+            position: relative;
+            display: inline-flex;
+            width: fit-content;
+            overflow: visible;
+            border-radius: 10px;
+            opacity: 0;
+            transform: scale(0.8) translateY(100px);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s cubic-bezier(0.455, 0.03, 0.515, 0.955);
+        }
+
+        .lightbox.active {
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+        }
+
+        .lightbox.active .lightbox-content {
+            opacity: 1;
+            transform: scale(1) translateY(0px);
+        }
+
+        .lightbox-content:hover img {
+            corner-bottom-left-shape: scoop;
+            border-bottom-left-radius: 3em;
+        }
+
+        .lb-heart 
+        {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transform: translate(-50%, 50%) scale(0);
+
+            background: #ff2323;
+            color: #000;
+            font-size: 2rem;
+            width: 2em;
+            height: 2em;
+            border-radius: 50%;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            cursor: pointer;
+            transition: 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .lb-heart.pressed {
+            transform: translate(-50%, 50%) scale(0.85);
+        }
+
+        .lightbox-content:hover .lb-heart {
+            transform: translate(-50%, 50%) scale(1);
+        }
+
+        .lightbox-content img { max-width: 40vw; max-height: 85vh; display: block; border-radius: 10px; anchor-name: --content; transition: 200ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
         @media (max-width: 800px) 
         {
-            
+            .lightbox-content img {
+                max-width: 60vw;
+                
+            }
+            .card {
+                flex: 0 0 100%
+            }
             .nav-wrapper {
                 top: auto;
                 bottom: 0;
@@ -646,7 +795,7 @@
 
         <div class="grid-bg"></div>
 
-        <div class="box">
+        
             <h1>Hello po, Papa!</h1>
             
             <div class="Message2">
@@ -759,6 +908,31 @@
             <br>
             <br>
             <br>
+        
+        <div class="art-carousel">
+            <div class="card">
+                <img src="lovepa.jpg" alt="Gallery Image 1">
+            </div>
+            <div class="card">
+                <img src="h1.jpg" alt="Gallery Image 1">
+            </div>
+            <div class="card">
+                <img src="h2.jpg" alt="Gallery Image 1">
+            </div>
+            <div class="card">
+                <img src="h3.jpg" alt="Gallery Image 1">
+            </div>
+            <div class="card">
+                <img src="h4.jpg" alt="Gallery Image 1">
+            </div>
+        </div>
+
+        <div id="lightbox" class="lightbox">
+            <div class="lightbox-content">
+                <img id="big-img">
+                <div class="lb-heart">🤍</div>
+            </div>
+            
         </div>
     </div>
 
@@ -942,9 +1116,12 @@
 
             showToast('Message from Andrew Sazon', getRandomObjectFromArray(messageArray));
 
-            heart.style.left = '50%';
-            heart.style.top = '50%';
-            heart.style.transform = 'translate(-50%, -50%)';
+            const rect = ball.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2 - 32;
+            const startY = rect.top + rect.height / 2 - 32;
+
+            heart.style.left = startX + 'px';
+            heart.style.top  = startY + 'px';
 
             const angle = Math.random() * Math.PI * 2;
             const distance = 300 + Math.random() * 200;
@@ -955,8 +1132,7 @@
             heart.style.setProperty('--x', x);
             heart.style.setProperty('--y', y);
 
-            ball.appendChild(heart);
-            heart.getBoundingClientRect();
+            document.body.appendChild(heart);
 
             heart.addEventListener('animationend', () => {
                 heart.remove();
@@ -1075,6 +1251,78 @@
 
             startTimer();
         }
+
+        const lbHeart = document.querySelector('.lb-heart');
+
+        lbHeart.addEventListener('mousedown', () => {
+            lbHeart.classList.add('pressed');
+        });
+
+        lbHeart.addEventListener('mouseup', () => {
+            lbHeart.classList.remove('pressed');
+        });
+
+        lbHeart.addEventListener('mouseleave', () => {
+            lbHeart.classList.remove('pressed');
+        });
+
+        lbHeart.addEventListener('touchstart', () => {
+            lbHeart.classList.add('pressed');
+        });
+
+        lbHeart.addEventListener('touchend', () => {
+            lbHeart.classList.remove('pressed');
+        });
+
+        lbHeart.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            const heart = document.createElement('div');
+            heart.classList.add('heart');
+
+            showToast('From You 🤍', getRandomObjectFromArray(messageArray));
+
+            const rect = lbHeart.getBoundingClientRect();
+
+            const startX = rect.left + rect.width / 2 - 32;
+            const startY = rect.top + rect.height / 2 - 32;
+
+            heart.style.left = startX + 'px';
+            heart.style.top  = startY + 'px';
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 300 + Math.random() * 200;
+
+            const x = Math.cos(angle) * distance + 'px';
+            const y = Math.sin(angle) * distance + 'px';
+
+            heart.style.setProperty('--x', x);
+            heart.style.setProperty('--y', y);
+
+            heart.style.zIndex = "9999";
+            document.body.appendChild(heart);
+
+            heart.addEventListener('animationend', () => {
+                heart.remove();
+            });
+        });
+
+        const lightbox = document.getElementById('lightbox');
+        const bigImg = document.getElementById('big-img');
+        const cardsImages = document.querySelectorAll('.card img');
+
+        cardsImages.forEach(image => {
+            image.addEventListener('click', () => {
+                bigImg.src = image.src; 
+                lightbox.classList.add('active'); 
+            });
+        });
+
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) {
+                lightbox.classList.remove('active');
+            }
+        });
     </script>
 </body>
 </html>
