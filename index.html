@@ -368,6 +368,69 @@
             }
         }
 
+        @property --toast-margin {
+            syntax: '<length>';
+            inherits: false;
+            initial-value: 20px;
+        }
+
+        .toast {
+            position: fixed;
+            background: rgba(44, 44, 44, 0.5);
+            width: 30%; height: 15%;
+            border-radius: 15px;
+            
+            bottom: var(--toast-margin);
+            left: var(--toast-margin);
+
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            opacity: 0;
+
+            transform: translateX(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
+
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.9);
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            overflow: hidden;
+            padding: 8px 12px;
+            box-sizing: border-box;
+        }
+
+        .toast-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 2px;
+        }
+
+        .toast-message {
+            flex: 1;
+            min-width: 0;
+            font-size: 13px;
+            line-height: 15px;
+            word-break: break-word;
+            max-height: calc(1.2em * 3); /* 3 lines */
+            overflow-y: auto;
+        }
+
+        .toast-title {
+            margin: 1px 0 0 10px;
+            font-size: small;
+        }
+
         @media (max-width: 800px) 
         {
             
@@ -540,12 +603,19 @@
                 transform: translateX(0);
                 transform: translateY(0); 
             }
+
+            .toast {
+                bottom: 0;
+                top: var(--toast-margin);
+
+                width: 50%
+            }
         }
     </style>
 </head>
 <body>
     <div id="main">
-
+        
         <div class="nav-wrapper">
             <div class="nav">
                 <p class="header-format">
@@ -853,12 +923,25 @@
 
         requestAnimationFrame(render);
 
+        const messageArray = [
+            "Hello po pa? Kamustaa po hehe!",
+            "It's been a week narin po..",
+            "Herw me pooo ginagawa this for youuu po..",
+            "May ipis na lumipad sa kama :( nakakainisss HAAHHAHA",
+            "I LOVEEEE YOU POOO PAPAAA KOOOOO MUCHY MUCHHHH!!!",
+            "Always wonder if you're okay po",
+            "You maybe naka move on napo i'm sorry po late kona na napasa po to sayu",
+            "POP UP! POP UP! POP UP! RA-TATATATATA TA!"
+        ]
+        
         const ball = document.querySelector('.ball-wrapper');
 
         ball.addEventListener('click', () => {
             const heart = document.createElement('div');
             heart.classList.add('heart');
-            sendNotif('💌', 'I love you po, Papa!');
+
+            showToast('Message from Andrew Sazon', getRandomObjectFromArray(messageArray));
+
             heart.style.left = '50%';
             heart.style.top = '50%';
             heart.style.transform = 'translate(-50%, -50%)';
@@ -933,15 +1016,65 @@
             ballsObserver.observe(bl)
         })
 
-        async function sendNotif(title, body) {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-        new Notification(title, {
-            body: body,
-            icon: 'icon/favicon.ico' // your existing icon
-        });
-    }
-}
+        function getRandomObjectFromArray(arr = [])
+        {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        let currentToast = null;
+
+        function showToast(title, message, icon = 'icon/favicon.ico', duration = 5000)
+        {
+            if (currentToast) 
+            {
+                currentToast.remove();
+                currentToast = null;
+            }
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <div class="toast-title">${title}</div>
+                <div class="toast-wrapper">
+                    <img src="${icon}" alt="icon" class="toast-icon">
+                    <div class="toast-message">${message}</div>
+                </div>
+            `;
+
+            document.body.appendChild(toast);
+            currentToast = toast;
+
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => toast.classList.add('visible'));
+            });
+
+            let remaining = duration;
+            let start;
+            let timer;
+
+            function startTimer() 
+            {
+                start = Date.now();
+                timer = setTimeout(() => {
+                    toast.classList.remove('visible');
+                    toast.addEventListener('transitionend', () => {
+                        toast.remove();
+                        currentToast = null;
+                    }, { once: true });
+                }, remaining);
+            }
+
+            toast.addEventListener('mouseenter', () => {
+                clearTimeout(timer);
+                remaining -= Date.now() - start;
+            });
+
+            toast.addEventListener('mouseleave', () => {
+                startTimer();
+            });
+
+            startTimer();
+        }
     </script>
 </body>
 </html>
