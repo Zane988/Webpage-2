@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Ace</title>
     <style>
         html {
             scroll-behavior: smooth;
+            
         }
 
         * {
@@ -24,8 +24,9 @@
         body {
             background: linear-gradient(180deg, #000000 20%, #0e0f13 60%);
             min-height: 100vh;
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             color: white;
+            
             padding: 40px;
             line-height: 2;
             overflow-x: hidden;
@@ -857,7 +858,7 @@
         ball.addEventListener('click', () => {
             const heart = document.createElement('div');
             heart.classList.add('heart');
-
+            sendNotif('💌', 'I love you po, Papa!');
             heart.style.left = '50%';
             heart.style.top = '50%';
             heart.style.transform = 'translate(-50%, -50%)';
@@ -912,7 +913,7 @@
                     entry.target.classList.remove('visible');
                 }
             });
-        }, {});
+        }, { threshold: 0.15 });
 
         const ballsObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -922,7 +923,7 @@
                     ballsObserver.unobserve(entry.target)
                 }
             });
-        }, {});
+        }, { threshold: 0.15 });
 
         document.querySelectorAll('.img-left, .img-right, .text-left, .text-right').forEach(el => {
             slideObserver.observe(el);
@@ -931,6 +932,16 @@
         document.querySelectorAll('.ball-reveal').forEach(bl => {
             ballsObserver.observe(bl)
         })
+
+        async function sendNotif(title, body) {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+        new Notification(title, {
+            body: body,
+            icon: 'icon/favicon.ico' // your existing icon
+        });
+    }
+}
     </script>
 </body>
 </html>
