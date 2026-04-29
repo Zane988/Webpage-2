@@ -526,7 +526,7 @@
 
         .lightbox.active {
             background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(2px);
             pointer-events: auto;
         }
 
@@ -1113,9 +1113,7 @@
         ball.addEventListener('click', () => {
             const heart = document.createElement('div');
             heart.classList.add('heart');
-
-            showToast('Message from Andrew Sazon', getRandomObjectFromArray(messageArray));
-
+            
             const rect = ball.getBoundingClientRect();
             const startX = rect.left + rect.width / 2 - 32;
             const startY = rect.top + rect.height / 2 - 32;
