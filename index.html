@@ -526,7 +526,6 @@
 
         .lightbox.active {
             background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(2px);
             pointer-events: auto;
         }
 
@@ -992,11 +991,12 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferData(gl.ARRAY_BUFFER, pts, gl.STATIC_DRAW);
 
-        function compile(gl, type, src) {
-        const s = gl.createShader(type);
-        gl.shaderSource(s, src);
-        gl.compileShader(s);
-        return s;
+        function compile(gl, type, src) 
+        {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, src);
+            gl.compileShader(s);
+            return s;
         }
 
         const prog = gl.createProgram();
@@ -1024,11 +1024,11 @@
             "last_memory.jpg"
         ];
 
-        function randomImage() {
-        return images[Math.floor(Math.random() * images.length)];
+        function randomImage() 
+        {
+            return images[Math.floor(Math.random() * images.length)];
         }
 
-        // ---------- TEXTURE ----------
         let tex = gl.createTexture();
 
         function loadTexture(src) {
@@ -1277,8 +1277,6 @@
 
             const heart = document.createElement('div');
             heart.classList.add('heart');
-
-            showToast('From You 🤍', getRandomObjectFromArray(messageArray));
 
             const rect = lbHeart.getBoundingClientRect();
 

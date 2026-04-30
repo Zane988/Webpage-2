@@ -52,12 +52,48 @@
             "lrc": "lyrics/cant-help-falling"
         },
         {
+            "name": "The Fate of Ophelia",
+            "author": "Taylor Swift",
+            "file": "songs/fate.mp3",
+            "icon": "songs/icon/icon-fate",
+            "color": "#AD7C53",
+            "lrc": "lyrics/fate",
+            "video": "video/video-fate.mp4"
+        },
+        {
             "name": "Maybe This Time",
             "author": "Michael Martin Murphey",
             "file": "songs/maybethistime.mp3",
             "icon": "songs/icon/icon-maybethistime",
             "color": "#FFD986",
             "lrc": "lyrics/maybe-this-time"
+        },
+        {
+            "name": "Die with a Smile",
+            "author": "Lady Gaga, Bruno Mars",
+            "file": "songs/smile.mp3",
+            "icon": "songs/icon/icon-smile",
+            "color": "#449CE4",
+            "lrc": "lyrics/smile",
+            "video": "video/video-smile.mp4"
+        },
+        {
+            "name": "The Lazy Song",
+            "author": "Bruno Mars",
+            "file": "songs/lazy.mp3",
+            "icon": "songs/icon/icon-lazy",
+            "color": "#3F3F3F",
+            "lrc": "lyrics/lazy",
+            "video": "video/video-lazy.mp4"
+        },
+        {
+            "name": "Enchanted",
+            "author": "Taylor Swift",
+            "file": "songs/enchanted.mp3",
+            "icon": "songs/icon/icon-enchanted",
+            "color": "#F332E9",
+            "lrc": "lyrics/enchanted",
+            "video": "video/video-enchanted.mp4"
         },
         {
             "name": "Yoka ni Mitorete",
@@ -94,6 +130,15 @@
             "color": "#A50A0A",
             "lrc": "lyrics/running-the-show",
             "video": "video/video-running-the-show.mp4"
+        },
+        {
+            "name": "Abstraction (Big Band Version)",
+            "author": "KittenSneeze, Amanda Hufford, Michael Kovach & CLOUDSAVE",
+            "file": "songs/abs.mp3",
+            "icon": "songs/icon/icon-abs",
+            "color": "#A50A0A",
+            "lrc": "lyrics/abs",
+            "video": "video/video-abs.mp4"
         }
     ]
 }
