@@ -580,9 +580,11 @@
 
         .book-container {
             position: relative;
-            background-color: #1e3958;
+            background-color: transparent;
             width: 100%;
-            height: 20vh;
+            height: 500px;
+            margin: auto;
+            perspective: 600px;
         }
 
         .book-back {
@@ -689,25 +691,55 @@
         }
 
         .float-wrapper {
-            animation: float 3s ease-in-out infinite;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-325%, -40%);
         }
 
-        .book-item
-        {
-            position: absolute;
-            width: 50px;
-            height: 50px;
+        .float-inner {
+            transform: translateY(80px);
+            opacity: 0;
+        }
+
+        .float-inner.visible {
+            opacity: 1;
+            animation: dropIn 0.8s ease-in-out forwards;
+        }
+
+        .float-inner.floating {
+            animation: float2 3s ease-in-out infinite;
+        }
+
+        @keyframes dropIn {
+            0% {
+                transform: translateY(-30px);
+            }
+            50% {
+                transform: translateY(-80px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float2 {
+            0%   { transform: translateY(0px); }
+            50%  { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .book-item {
+            width: 40px;
+            height: 40px;
             image-rendering: pixelated;
-            margin: 35px 20px auto;
             background-image: url('book/book-item.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            
             transform-style: preserve-3d;
             animation: spinX 6s linear infinite;
-            perspective: 30%;
-            transform-origin: center;
         }
 
         .book-item::before {
@@ -717,6 +749,38 @@
             background: inherit;
             transform: translateZ(-1px);
             filter: brightness(0.8);
+        }
+
+        .grass {
+            position: absolute;
+            inset: -100px;
+            image-rendering: pixelated;
+            background: url('minecraft/mc-grass.png') center / 750px no-repeat;
+            z-index: 0;
+            pointer-events: none;
+            
+        }
+
+        .book-item-lore {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 70%;
+            font-family: 'Minecraft';
+            font-size: 24px;
+            word-spacing: 7px;
+            opacity: 0;
+            max-width: 1500px;
+            color: rgb(255, 255, 255);
+
+            transition: all 1s ease-in-out;
+        }
+
+        .book-item-lore.show {
+            bottom: 0px;
+            opacity: 1;
         }
 
         @keyframes spinX {
@@ -756,6 +820,29 @@
 
         @media (max-width: 800px) 
         {
+            .float-wrapper {
+                transform: translate(-275%, -40%);
+            }
+
+            .grass {
+                background: url('minecraft/mc-grass.png') center / 600px no-repeat;
+            }
+
+            .book-item-lore {
+                position: absolute;
+                bottom: 0px;
+                width: 100%;
+                font-size: 16px;
+                word-spacing: 7px;
+                max-width: 1500px;
+                color: rgb(255, 255, 255);
+            }
+
+            .book-item-lore.show {
+                bottom: 40px;
+                opacity: 1;
+            }
+
             .book-text {
                 font-size: 14px;
                 top: -10px;
@@ -1132,7 +1219,29 @@
             </div>
             
         </div>
+        <div class="book-container">
+            <div class="grass"></div>
+                <div class="float-wrapper">
+                    <div class="float-inner">
+                        <div class="book-item"></div>
+                    </div>
+                </div>
+            <div class="book-item-lore">Oh it looks like someone dropped their signed book on the ground..</div>
+        </div>
 
+        <div class="book-back">
+            <div class="book-wrapper">
+                <img src="book/book.png">
+                <div class="book-page-info">Page 3 of 3</div>
+                <div class="book-text">Te</div>
+                <div class="book-close">x</div>
+                <div class="book-turn-left"></div>
+                <div class="book-turn-right"></div>
+            </div>
+        </div>
+        
+        <audio id="turnSound" preload="auto"></audio>
+        
         <div class="nav-wrapper">
             <div class="nav">
                 <p class="header-format">
@@ -1158,24 +1267,6 @@
                         <img src="icon/music.png" class="nav-img">
                     </a>
                 </div>
-            </div>
-        </div>
-
-        <div class="book-container">
-            <div class="float-wrapper">
-                <div class="book-item">
-                </div>
-            </div>
-        </div>
-
-        <div class="book-back">
-            <div class="book-wrapper">
-                <img src="book/book.png">
-                <div class="book-page-info">Page 3 of 3</div>
-                <div class="book-text">Te</div>
-                <div class="book-close">x</div>
-                <div class="book-turn-left"></div>
-                <div class="book-turn-right"></div>
             </div>
         </div>
     </div>
@@ -1570,11 +1661,15 @@
 
         bookItem.addEventListener('click', (e) => {
             book.classList.add('active')
+            document.body.style.overflow = 'hidden'
+            book.style.zIndex = '999'
         });
 
         book.addEventListener('click', (e) => {
             if (e.target === book) {
                 book.classList.remove('active');
+                document.body.style.overflow = ''
+                book.style.zIndex = '0'
             }
         });
 
@@ -1582,12 +1677,12 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function playTurnSound() 
-        {
-            const turnSound = new Audio(`book/sounds/page_turn${getRandomInt(1, 3)}.ogg`);
-            turnSound.preload = "auto";
-            turnSound.currentTime = 0;
-            turnSound.play();
+        const turnSoundEl = document.getElementById('turnSound');
+
+        function playTurnSound() {
+            turnSoundEl.src = `book/sounds/page_turn${getRandomInt(1, 3)}.ogg`;
+            turnSoundEl.currentTime = 0;
+            turnSoundEl.play();
         }
 
         const pages = [
@@ -1627,7 +1722,54 @@
 
         document.querySelector('.book-close').addEventListener('click', () => {
             book.classList.remove('active');
+            document.body.style.overflow = ''
+            book.style.zIndex = '0';
         });
+
+        const floatObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const el = entry.target;
+
+                    el.classList.add('visible');
+
+                    // after drop animation ends → start floating
+                    el.addEventListener('animationend', () => {
+                        
+                        el.classList.add('floating');
+                    }, { once: true });
+
+                    floatObserver.unobserve(el);
+                }
+            });
+        }, { rootMargin: "0px 0px -100px 0px" });
+
+        document.querySelectorAll('.float-inner').forEach(el => {
+            floatObserver.observe(el);
+        });
+        let bookLoreToastShown = false;
+
+        const bookLore = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) 
+                {
+                    const el = entry.target;
+                    if(!bookLoreToastShown)
+                    {
+                        showToast('Notice', "You can click the book and see what's inside.");
+                        bookLoreToastShown = true;
+                    }
+                    
+                    el.classList.add('show');
+                    floatObserver.unobserve(el);
+                }
+            });
+        }, { rootMargin: "0px 0px -100px 0px" });
+
+
+        const bookLoreEl = document.querySelector('.book-item-lore');
+        bookLore.observe(bookLoreEl);
+
     </script>
 </body>
 </html>
