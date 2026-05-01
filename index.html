@@ -10,6 +10,11 @@
             
         }
 
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('font/Mojang-Regular.ttf') format('truetype');
+        }
+
         * {
             -webkit-tap-highlight-color: transparent;
             image-rendering: optimizeQuality;
@@ -589,6 +594,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+
             pointer-events: none;
         }
 
@@ -606,6 +612,80 @@
             height: 256px;
             image-rendering: pixelated;
             transform: translate(calc(-50% + 90px), calc(-50% + 69px)) scale(2.5);
+        }
+
+        .book-wrapper {
+            position: relative;
+            width: 256px;
+            height: 256px;
+        }
+
+        .book-text {
+            position: absolute;
+            top: -50px;
+            left: -10px;
+
+            width: 110px;
+            height: 150px;
+
+            font-family: 'Minecraft';
+            font-size: 17px;
+            word-spacing: 7px;
+            line-height: 1.2;
+            color: rgb(0, 0, 0);
+
+            min-width: 290px;
+            min-height: 301px;
+
+            overflow: hidden;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        .book-page-info {
+            position: absolute;
+            top: -85px;
+            left: -15px;
+            transform: translate(40%, -10%);
+            width: 200px;
+            font-family: 'Minecraft';
+            font-size: 17px;
+            text-align: right;
+            word-spacing: 4px;
+            line-height: 1.2;
+            color: rgb(0, 0, 0);
+
+            overflow: hidden;
+            white-space: pre-wrap;
+        }
+
+        .book-turn-left,
+        .book-turn-right {
+            position: absolute;
+            width: 46px;
+            height: 26px;
+            bottom: -40px;
+            cursor: pointer;
+            image-rendering: pixelated;
+        }
+
+        .book-turn-left {
+            left: -10px;
+            background: url('book/page_backward.png') center / contain no-repeat;
+        }
+
+        .book-turn-left:hover {
+            background: url('book/page_backward_highlighted.png') center / contain no-repeat;
+        }
+
+        .book-turn-right {
+            right: 0px;
+            background: url('book/page_forward.png') center / contain no-repeat;
+        }
+
+        .book-turn-right:hover {
+            background: url('book/page_forward_highlighted.png') center / contain no-repeat;
         }
 
         .float-wrapper {
@@ -628,7 +708,6 @@
             animation: spinX 6s linear infinite;
             perspective: 30%;
             transform-origin: center;
-    
         }
 
         .book-item::before {
@@ -651,15 +730,35 @@
 
         @media (max-width: 800px) 
         {
+            .book-text {
+                font-size: 14px;
+                top: -10px;
+                left: 15px;
 
-            .book-back {
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.9);
+                min-width: 230px;
+                min-height: 250px;
+            }
 
-                display: flex;
-                align-items: center;
-                justify-content: center;
+            .book-page-info {
+                font-size: 15px;
+                top: -35px;
+                left: -40px;
+                width: 200px;
+                
+            }
+
+            .book-turn-left,
+            .book-turn-right {
+                
+                bottom: -15px;
+            }
+
+            .book-turn-left {
+                left: 20px;
+            }
+
+            .book-turn-right {
+                right: 30px;
             }
 
             .book-back img {
@@ -1033,12 +1132,19 @@
 
         <div class="book-container">
             <div class="float-wrapper">
-                <div class="book-item"></div>
+                <div class="book-item">
+                </div>
             </div>
         </div>
 
         <div class="book-back">
-            <img src="book/book.png" alt="Book">
+            <div class="book-wrapper">
+                <img src="book/book.png">
+                <div class="book-page-info">Page 3 of 3</div>
+                <div class="book-text">It started on a quiet afternoon when everything felt too normal, the kind of normal that makes you think nothing will ever change, even though deep down you already know it will. We were sitting somewhere we always ended up sitting—no real plan, no destination, just the comfort of being next to each other and pretending time wasn’t something that kept moving forward without us. You were holding a small notebook back then. I remember how you kept flipping it open and closed like you were deciding whether the words inside were safe enough to exist. I didn’t ask what it was at first. I just watched. Sometimes that’s what love feels like—watching someone carefully, learning their silence before their words.</div>
+                <div class="book-turn-left"></div>
+                <div class="book-turn-right"></div>
+            </div>
         </div>
     </div>
 
@@ -1439,6 +1545,52 @@
                 book.classList.remove('active');
             }
         });
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function playTurnSound() 
+        {
+            const turnSound = new Audio(`book/sounds/page_turn${getRandomInt(1, 3)}.ogg`);
+            turnSound.preload = "auto";
+            turnSound.currentTime = 0;
+            turnSound.play();
+        }
+
+        const pages = [
+            'HEYYY'
+        ];
+
+        let currentPage = 0;
+        const bookText = document.querySelector('.book-text');
+        const bookPageInfo = document.querySelector('.book-page-info');
+
+        document.querySelector('.book-turn-right').addEventListener('click', () => {
+            if (currentPage < pages.length - 1) 
+            {
+                currentPage++;
+                bookText.textContent = pages[currentPage];
+                bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
+                playTurnSound()
+            }
+        });
+
+        document.querySelector('.book-turn-left').addEventListener('click', () => {
+            if (currentPage > 0) 
+            {
+                currentPage--;
+                bookText.textContent = pages[currentPage];
+                bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
+                playTurnSound()
+            }
+        });
+
+        function setPage() {
+            bookText.textContent = pages[currentPage];
+            bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
+        }
+        setPage()
     </script>
 </body>
 </html>
