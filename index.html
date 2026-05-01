@@ -728,6 +728,32 @@
             }
         }
 
+        .book-close {
+            position: absolute;
+            top: -140px;
+            right: -85px;
+
+            font-family: 'Minecraft';
+            font-size: 20px;
+            color: rgb(255, 255, 255);
+
+            cursor: pointer;
+            user-select: none;
+
+            width: 24px;
+            height: 24px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            transition: transform 0.15s ease;
+        }
+
+        .book-close:hover {
+            transform: scale(1.2);
+        }
+
         @media (max-width: 800px) 
         {
             .book-text {
@@ -759,6 +785,11 @@
 
             .book-turn-right {
                 right: 30px;
+            }
+
+            .book-close {
+                top: -90px;
+                right: -55px;
             }
 
             .book-back img {
@@ -1141,7 +1172,8 @@
             <div class="book-wrapper">
                 <img src="book/book.png">
                 <div class="book-page-info">Page 3 of 3</div>
-                <div class="book-text">It started on a quiet afternoon when everything felt too normal, the kind of normal that makes you think nothing will ever change, even though deep down you already know it will. We were sitting somewhere we always ended up sitting—no real plan, no destination, just the comfort of being next to each other and pretending time wasn’t something that kept moving forward without us. You were holding a small notebook back then. I remember how you kept flipping it open and closed like you were deciding whether the words inside were safe enough to exist. I didn’t ask what it was at first. I just watched. Sometimes that’s what love feels like—watching someone carefully, learning their silence before their words.</div>
+                <div class="book-text">Te</div>
+                <div class="book-close">x</div>
                 <div class="book-turn-left"></div>
                 <div class="book-turn-right"></div>
             </div>
@@ -1559,7 +1591,8 @@
         }
 
         const pages = [
-            'HEYYY'
+            'HEYYY',
+            'What ever you do at the crossroads\n\nDont turn LEFT\n\nWhat ever you do at the crossroads\n\nDont turn LEFT'
         ];
 
         let currentPage = 0;
@@ -1591,6 +1624,10 @@
             bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
         }
         setPage()
+
+        document.querySelector('.book-close').addEventListener('click', () => {
+            book.classList.remove('active');
+        });
     </script>
 </body>
 </html>
