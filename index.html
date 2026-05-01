@@ -753,7 +753,7 @@
 
         .grass {
             position: absolute;
-            inset: -100px;
+            inset: 0px;
             image-rendering: pixelated;
             background: url('minecraft/mc-grass.png') center / 750px no-repeat;
             z-index: 0;
@@ -763,7 +763,7 @@
 
         .book-item-lore {
             position: absolute;
-            bottom: -40px;
+            bottom: 50px;
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
@@ -775,7 +775,7 @@
             max-width: 1500px;
             color: rgb(255, 255, 255);
 
-            transition: all 1s ease-in-out;
+            transition: opacity 1s ease-in-out;
         }
 
         .book-item-lore.show {
@@ -818,18 +818,29 @@
             transform: scale(1.2);
         }
 
+        h2 {
+            font-size: 50px;
+            margin-left: 85px;
+            text-align: left;
+        }
+
         @media (max-width: 800px) 
         {
-            
+            h2 {
+                font-size: 21px;
+                margin-left: 25px;
+                text-align: left;
+            }
             html, body {
                 overflow-x: hidden;
             }
-            
+
             .float-wrapper {
                 transform: translate(-275%, -40%);
             }
 
             .grass {
+                inset: -50px;
                 background: url('minecraft/mc-grass.png') center / 600px no-repeat;
             }
 
@@ -1199,6 +1210,7 @@
             <br>
             <br>
         
+        <h2>Drawings - Favorites - Other</h2>
         <div class="art-carousel">
             <div class="card">
                 <img src="lovepa.jpg" alt="Gallery Image 1">
