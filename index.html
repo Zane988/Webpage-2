@@ -1907,7 +1907,7 @@
             powerPreference: "high-performance"
         });
         renderer.setSize(720, 220);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
         renderer.setClearColor(0x000000, 0);
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1982,7 +1982,6 @@
             modelGroup.scale.setScalar(mobileQuery.matches ? 0.7 : 0.8);
         });
 
-        // -------- CAR --------
         const carContainer = document.getElementById('car-viewer');
         const carRenderer = new THREE.WebGLRenderer({ 
             alpha: true, 
@@ -1990,7 +1989,7 @@
             powerPreference: "high-performance"
         });
         carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
-        carRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        carRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
         carRenderer.setClearColor(0x000000, 0);
         carContainer.appendChild(carRenderer.domElement);
 
@@ -2004,9 +2003,10 @@
         carDirLight.castShadow = false;
         carScene.add(carDirLight);
 
-        const cars = [
+        const cars = 
+        [
             'models/gtr/r35-type2/scene.gltf',
-            'models/car2/scene.gltf',   // replace with your actual paths
+            'models/car2/scene.gltf',
             'models/car3/scene.gltf',
         ];
 
@@ -2015,13 +2015,16 @@
 
         const carLoader = new GLTFLoader();
 
-        function loadCar(path) {
-            if (carModel) {
+        function loadCar(path) 
+        {
+            if (carModel) 
+            {
                 carScene.remove(carModel);
                 carModel = null;
             }
 
-            carLoader.load(path, (gltf) => {
+            carLoader.load(path, (gltf) => 
+            {
                 carModel = gltf.scene;
                 carScene.add(carModel);
 
@@ -2043,19 +2046,22 @@
 
         loadCar(cars[currentCarIndex]);
 
-        setInterval(() => {
+        setInterval(() => 
+        {
             currentCarIndex = (currentCarIndex + 1) % cars.length;
             loadCar(cars[currentCarIndex]);
         }, 8000);
 
-        function animateCar() {
+        function animateCar() 
+        {
             requestAnimationFrame(animateCar);
             if (carModel) carModel.rotation.y += 0.008;
             carRenderer.render(carScene, carCamera);
         }
         animateCar();
 
-        window.addEventListener('resize', () => {
+        window.addEventListener('resize', () => 
+        {
             carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
             carCamera.aspect = carContainer.clientWidth / carContainer.clientHeight;
             carCamera.updateProjectionMatrix();
