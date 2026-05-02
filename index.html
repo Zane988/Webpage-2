@@ -761,6 +761,22 @@
             
         }
 
+        #model-viewer {
+            position: absolute;
+            bottom: 165px;
+            left: 50%;
+            transform: translateX(-65px);
+            width: 220px;
+            height: 220px;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #model-viewer canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
         .book-item-lore {
             position: absolute;
             bottom: 50px;
@@ -1238,6 +1254,7 @@
         </div>
         <div class="book-container">
             <div class="grass"></div>
+            <div id="model-viewer"></div>
                 <div class="float-wrapper">
                     <div class="float-inner">
                         <div class="book-item"></div>
@@ -1815,6 +1832,82 @@
         const bookLoreEl = document.querySelector('.book-item-lore');
         bookLore.observe(bookLoreEl);
 
+    </script>
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        const mobileQuery = window.matchMedia("(max-width: 800px)");
+
+        const container = document.getElementById('model-viewer');
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(720, 220);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // moble
+        renderer.setClearColor(0x000000, 0);
+        
+        container.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.set(0, 1.5, 4);
+        camera.lookAt(0, 0.5, 0);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+        dirLight.position.set(5, 10, 5);
+        scene.add(dirLight);
+
+        const loader = new THREE.GLTFLoader();
+        const modelGroup = new THREE.Group(); //imma group u
+        scene.add(modelGroup);
+
+        const toAnim = [];
+
+        const clock = new THREE.Clock();
+
+        loader.load('models/derlord.gltf', (gltf) => {
+            const model = gltf.scene;
+            modelGroup.add(model);
+            modelGroup.scale.setScalar((mobileQuery.matches) ? 0.7 : 0.8);
+
+            if (gltf.animations && gltf.animations.length > 0) 
+            {
+                const anims = new THREE.AnimationMixer(model);
+                anims.clipAction(gltf.animations[0]).play();
+                toAnim.push(anims)
+            }
+
+        }, undefined, (err) => {
+            console.error(err);
+        });
+
+        function animate() 
+        {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            toAnim.forEach(ace => ace.update(delta));
+
+            renderer.render(scene, camera);
+
+            modelGroup.rotation.x = 0.35;
+            modelGroup.rotation.y = 4.1;
+            modelGroup.rotation.z = 0.07
+        }
+        animate();
+
+        function resizeModel()
+        {
+            modelGroup.scale.setScalar((mobileQuery.matches) ? 0.7 : 0.8);
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+        }
+
+        window.addEventListener('resize', (e) => {
+            resizeModel();
+        })
     </script>
 </body>
 </html>
