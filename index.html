@@ -851,7 +851,7 @@
             position: absolute;
             bottom: -50px;
             left: 50%;
-            transform: translateX(-705px);
+            transform: translateX(-505px);
             width: 720px;
             height: 720px;
             pointer-events: none;
@@ -864,12 +864,24 @@
 
         .car-viewer-lore {
             position: absolute;
-            bottom: 50px;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-            font-family: 'Minecraft';
-            font-size: 24px;
+            bottom: 50%;
+            transform: translateY(-50px);
+            right: 10%;
+            max-width: 380px;
+            text-align: left;
+            font-weight: bolder;
+            font-size: 18px;
+            color: white;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .car-name {
+            display: block;
+            font-family: Arial, sans-serif;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
             color: white;
         }
 
@@ -879,9 +891,33 @@
                 position: absolute;
                 bottom: 0px;
                 left: 50%;
-                transform: translateX(-455px);
+                transform: translateX(-285px);
                 width: 560px;
                 height: 560px;
+            }
+
+            .car-name {
+                display: block;
+                font-family: Arial, sans-serif;
+                font-size: 20px;
+                font-weight: 800;
+                letter-spacing: 1px;
+                margin-bottom: 8px;
+                color: white;
+            }
+
+            .car-viewer-lore {
+                position: absolute;
+                top: 340px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 80%;
+                max-width: 700px;
+                text-align: center;
+                font-size: 14px;
+                color: white;
+                transition: all 0.3s ease-in-out;
+                right: unset;
             }
 
             #model-viewer {
@@ -1899,7 +1935,6 @@
 
         const mobileQuery = window.matchMedia("(max-width: 800px)");
 
-        // -------- DERLORD --------
         const container = document.getElementById('model-viewer');
         const renderer = new THREE.WebGLRenderer({ 
             alpha: true, 
@@ -1927,10 +1962,7 @@
         dirLight.shadow.mapSize.height = 512;
         scene.add(dirLight);
 
-        const floor = new THREE.Mesh(
-            new THREE.PlaneGeometry(20, 20),
-            new THREE.ShadowMaterial({ opacity: 0.4 })
-        );
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.4 }));
         floor.rotation.x = -Math.PI / 2.8;
         floor.receiveShadow = true;
         scene.add(floor);
@@ -1945,7 +1977,8 @@
         loader.load('models/derlord.gltf', (gltf) => {
             const model = gltf.scene;
             gltf.scene.traverse((node) => {
-                if (node.isMesh) {
+                if (node.isMesh) 
+                {
                     node.castShadow = true;
                     node.receiveShadow = true;
                 }
@@ -1957,14 +1990,16 @@
             modelGroup.add(model);
             modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
 
-            if (gltf.animations && gltf.animations.length > 0) {
+            if (gltf.animations && gltf.animations.length > 0) 
+            {
                 const anims = new THREE.AnimationMixer(model);
                 anims.clipAction(gltf.animations[0]).play();
                 toAnim.push(anims);
             }
         }, undefined, (err) => console.error(err));
 
-        function animate() {
+        function animate() 
+        {
             requestAnimationFrame(animate);
             const delta = clock.getDelta();
             toAnim.forEach(a => a.update(delta));
@@ -1979,15 +2014,11 @@
             renderer.setSize(container.clientWidth, container.clientHeight);
             camera.aspect = container.clientWidth / container.clientHeight;
             camera.updateProjectionMatrix();
-            modelGroup.scale.setScalar(mobileQuery.matches ? 0.7 : 0.8);
+            modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
         });
 
         const carContainer = document.getElementById('car-viewer');
-        const carRenderer = new THREE.WebGLRenderer({ 
-            alpha: true, 
-            antialias: false,
-            powerPreference: "high-performance"
-        });
+        const carRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "high-performance" });
         carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
         carRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
         carRenderer.setClearColor(0x000000, 0);
@@ -2005,9 +2036,18 @@
 
         const cars = 
         [
-            'models/gtr/r35-type2/scene.gltf',
-            'models/car2/scene.gltf',
-            'models/car3/scene.gltf',
+            'models/gtr/aimgain-r35-type2/scene.gltf',
+            'models/ferrari/fxx-k/scene.gltf',
+            'models/bmw/m4/scene.gltf',
+            'models/bmw/e30-1985/scene.gltf'
+        ];
+
+        const carsLore = 
+        [
+            'Nissan GTR R35 Aimgain\nI remember po you also like cars like GTR, Ferrari and such po..\nI chose this one sinc i know youll like the color!',
+            'Ferrari Fxx-K\nThis one po Red and Black like your favorite color\nand yung style poooo.',
+            'BMW M4\nNapag-usapan rin po natin to and habang naghahanap po me\nnagugustuhan ko ung styleee wwiwow',
+            'BMW E-30 1985\nNaalala korin po nag-usap us about sa old style po neto ehh.. For sure eto po un\nBMW 1985 HAHAHAHA'
         ];
 
         let currentCarIndex = 0;
@@ -2046,11 +2086,24 @@
 
         loadCar(cars[currentCarIndex]);
 
+        const loreTxt = document.querySelector('.car-viewer-lore');
+
         setInterval(() => 
         {
             currentCarIndex = (currentCarIndex + 1) % cars.length;
             loadCar(cars[currentCarIndex]);
+
+            changeLoreTxt(currentCarIndex)
         }, 8000);
+
+        function changeLoreTxt(ind)
+        {
+            const parts = carsLore[ind].split('\n');
+            const name = parts[0];
+            const desc = parts.slice(1).join('\n');
+            loreTxt.innerHTML = `<span class="car-name">${name}</span>${desc}`;
+        }
+        changeLoreTxt(0)
 
         function animateCar() 
         {

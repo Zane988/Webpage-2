@@ -1,0 +1,11 @@
+Model Information:
+* title:	Nissan Aimgain GT R35 Type2
+* source:	https://sketchfab.com/3d-models/nissan-aimgain-gt-r35-type2-77456704dc1b4d299a23fecdf341003c
+* author:	vecarz (https://sketchfab.com/heynic)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Nissan Aimgain GT R35 Type2" (https://sketchfab.com/3d-models/nissan-aimgain-gt-r35-type2-77456704dc1b4d299a23fecdf341003c) by vecarz (https://sketchfab.com/heynic) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
