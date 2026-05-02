@@ -763,7 +763,7 @@
 
         #model-viewer {
             position: absolute;
-            bottom: 165px;
+            bottom: 160px;
             left: 50%;
             transform: translateX(-65px);
             width: 220px;
@@ -840,8 +840,55 @@
             text-align: left;
         }
 
+        .car-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            margin: auto;
+        }
+
+        #car-viewer {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-705px);
+            width: 720px;
+            height: 720px;
+            pointer-events: none;
+        }
+
+        #car-viewer canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .car-viewer-lore {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: 'Minecraft';
+            font-size: 24px;
+            color: white;
+        }
+
         @media (max-width: 800px) 
         {
+            #car-viewer {
+                position: absolute;
+                bottom: 0px;
+                left: 50%;
+                transform: translateX(-455px);
+                width: 560px;
+                height: 560px;
+            }
+
+            #model-viewer {
+                bottom: 160px;
+                left: 50%;
+                transform: translateX(-70px);
+            }
             h2 {
                 font-size: 21px;
                 margin-left: 25px;
@@ -1275,6 +1322,11 @@
         </div>
         
         <audio id="turnSound" preload="auto"></audio>
+
+        <div class="car-container">
+            <div id="car-viewer"></div>
+            <div class="car-viewer-lore">His Dream Cars</div>
+        </div>
         
         <div class="nav-wrapper">
             <div class="nav">
@@ -1833,81 +1885,156 @@
         bookLore.observe(bookLoreEl);
 
     </script>
-    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script>
-        const mobileQuery = window.matchMedia("(max-width: 800px)");
+    <script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.184.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.184.0/examples/jsm/"
+    }
+}
+</script>
 
-        const container = document.getElementById('model-viewer');
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(720, 220);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // moble
-        renderer.setClearColor(0x000000, 0);
-        
-        container.appendChild(renderer.domElement);
+<script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
-        camera.position.set(0, 1.5, 4);
-        camera.lookAt(0, 0.5, 0);
+    const mobileQuery = window.matchMedia("(max-width: 800px)");
 
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1);
-        scene.add(ambientLight);
+    // -------- DERLORD --------
+    const container = document.getElementById('model-viewer');
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(720, 220);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        dirLight.position.set(5, 10, 5);
-        scene.add(dirLight);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.set(0, 1.5, 4);
+    camera.lookAt(0, 0.5, 0);
 
-        const loader = new THREE.GLTFLoader();
-        const modelGroup = new THREE.Group(); //imma group u
-        scene.add(modelGroup);
+    scene.add(new THREE.AmbientLight(0xffffff, 1));
 
-        const toAnim = [];
+    const dirLight = new THREE.DirectionalLight(0xffffff, 4);
+    dirLight.position.set(5, 20, 8);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 1024;
+    dirLight.shadow.mapSize.height = 1024;
+    scene.add(dirLight);
 
-        const clock = new THREE.Clock();
+    const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(20, 20),
+        new THREE.ShadowMaterial({ opacity: 0.4 })
+    );
+    floor.rotation.x = -Math.PI / 2.8;
+    floor.receiveShadow = true;
+    scene.add(floor);
 
-        loader.load('models/derlord.gltf', (gltf) => {
-            const model = gltf.scene;
-            modelGroup.add(model);
-            modelGroup.scale.setScalar((mobileQuery.matches) ? 0.7 : 0.8);
+    const modelGroup = new THREE.Group();
+    scene.add(modelGroup);
 
-            if (gltf.animations && gltf.animations.length > 0) 
-            {
-                const anims = new THREE.AnimationMixer(model);
-                anims.clipAction(gltf.animations[0]).play();
-                toAnim.push(anims)
+    const toAnim = [];
+    const clock = new THREE.Clock();
+
+    const loader = new GLTFLoader();
+    loader.load('models/derlord.gltf', (gltf) => {
+        const model = gltf.scene;
+        gltf.scene.traverse((node) => {
+            if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
             }
-
-        }, undefined, (err) => {
-            console.error(err);
         });
 
-        function animate() 
-        {
-            requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            toAnim.forEach(ace => ace.update(delta));
+        const box = new THREE.Box3().setFromObject(model);
+        floor.position.y = box.min.y;
 
-            renderer.render(scene, camera);
+        modelGroup.add(model);
+        modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
 
-            modelGroup.rotation.x = 0.35;
-            modelGroup.rotation.y = 4.1;
-            modelGroup.rotation.z = 0.07
+        if (gltf.animations && gltf.animations.length > 0) {
+            const anims = new THREE.AnimationMixer(model);
+            anims.clipAction(gltf.animations[0]).play();
+            toAnim.push(anims);
         }
-        animate();
+    }, undefined, (err) => console.error(err));
 
-        function resizeModel()
-        {
-            modelGroup.scale.setScalar((mobileQuery.matches) ? 0.7 : 0.8);
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-        }
+    function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+        toAnim.forEach(a => a.update(delta));
+        renderer.render(scene, camera);
+        modelGroup.rotation.x = 0.35;
+        modelGroup.rotation.y = 4.1;
+        modelGroup.rotation.z = 0.07;
+    }
+    animate();
 
-        window.addEventListener('resize', (e) => {
-            resizeModel();
-        })
-    </script>
+    window.addEventListener('resize', () => {
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        modelGroup.scale.setScalar(mobileQuery.matches ? 0.7 : 0.8);
+    });
+
+    // -------- CAR --------
+    const carContainer = document.getElementById('car-viewer');
+    const carRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
+    carRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    carRenderer.setClearColor(0x000000, 0);
+    carContainer.appendChild(carRenderer.domElement);
+
+    // RoomEnvironment for reflections!
+    
+    const carScene = new THREE.Scene();
+    
+    const carCamera = new THREE.PerspectiveCamera(45, carContainer.clientWidth / carContainer.clientHeight, 0.1, 10000);
+
+    carScene.add(new THREE.AmbientLight(0xffffff, 1));
+
+    const carDirLight = new THREE.DirectionalLight(0xffffff, 7);
+    carDirLight.position.set(5, 20, 8);
+    carDirLight.shadow.mapSize.width = 1024;
+    carDirLight.shadow.mapSize.height = 1024;
+    carScene.add(carDirLight);
+
+    let carModel;
+
+    const carLoader = new GLTFLoader();
+    carLoader.load('models/gtr/r35-type2/scene.gltf', (gltf) => {
+        carModel = gltf.scene;
+        carScene.add(carModel);
+
+        const box = new THREE.Box3().setFromObject(carModel);
+        const center = box.getCenter(new THREE.Vector3());
+        const maxDim = 0.046;
+        const scale = 100 / maxDim;
+
+        carModel.scale.setScalar(scale);
+        carModel.position.set(-center.x * scale, -center.y * scale, -center.z * scale);
+
+        carCamera.position.set(0, 30, 150);
+        carCamera.lookAt(0, 0, 0);
+        carCamera.updateProjectionMatrix();
+
+    }, undefined, (err) => console.error(err));
+
+    function animateCar() {
+        requestAnimationFrame(animateCar);
+        if (carModel) carModel.rotation.y += 0.008;
+        carRenderer.render(carScene, carCamera);
+    }
+    animateCar();
+
+    window.addEventListener('resize', () => {
+        carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
+        carCamera.aspect = carContainer.clientWidth / carContainer.clientHeight;
+        carCamera.updateProjectionMatrix();
+    });
+</script>
 </body>
 </html>
