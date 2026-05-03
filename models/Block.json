@@ -1,0 +1,67 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "grass",
+	"textures": {
+		"0": "template:blocks/grass_top",
+		"1": "template:blocks/grass_side_carried",
+		"3": "template:blocks/dirt",
+		"5": "template:blocks/flower_rose_blue",
+		"6": "template:blocks/flower_rose",
+		"particle": "template:mc/grass_top"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 16],
+			"faces": {
+				"north": {"uv": [16, 0, 0, 16], "texture": "#1"},
+				"east": {"uv": [16, 0, 0, 16], "texture": "#1"},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#1"},
+				"west": {"uv": [16, 0, 0, 16], "texture": "#1"},
+				"up": {"uv": [16, 0, 0, 16], "texture": "#0"},
+				"down": {"uv": [16, 0, 0, 16], "texture": "#3"}
+			}
+		},
+		{
+			"name": "blueflower1",
+			"from": [-0.56718, 15, 9.86121],
+			"to": [15.43282, 31, 9.86121],
+			"rotation": {"x": 0, "y": -62.5, "z": 0, "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [16, 0, 0, 16], "texture": "#5"},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#5"}
+			}
+		},
+		{
+			"name": "blueflower2",
+			"from": [1.68683, 15, 9.27982],
+			"to": [17.68683, 31, 9.27982],
+			"rotation": {"x": 180, "y": -27.5, "z": 180, "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [16, 0, 0, 16], "texture": "#5"},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#5"}
+			}
+		},
+		{
+			"name": "red1",
+			"from": [-0.91802, 15, 6.33128],
+			"to": [15.08198, 31, 6.33128],
+			"rotation": {"x": 180, "y": -60, "z": -180, "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [16, 0, 0, 16], "texture": "#6"},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#6"}
+			}
+		},
+		{
+			"name": "red2",
+			"from": [1.98572, 15, 7.26499],
+			"to": [17.98572, 31, 7.26499],
+			"rotation": {"angle": -30, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [16, 0, 0, 16], "texture": "#6"},
+				"south": {"uv": [16, 0, 0, 16], "texture": "#6"}
+			}
+		}
+	]
+}

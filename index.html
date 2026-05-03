@@ -7,7 +7,10 @@
     <style>
         html {
             scroll-behavior: smooth;
-            
+        }
+
+        .hide-all {
+            display: none !important;
         }
 
         @font-face {
@@ -25,6 +28,21 @@
 
         a, button, .item {
             outline: none;
+        }
+
+        .fade-overlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+            z-index: 9999;
+        }
+
+        .fade-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         body {
@@ -897,8 +915,69 @@
             color: white;
         }
 
+        .block-container {
+            position: relative;
+            bottom: -50px;
+            width: 100%;
+            height: 350px;
+            margin: auto;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .block-container.hide {
+            display: none;
+        }
+
+        #block-viewer {
+            position: absolute;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 420px;
+            height: 420px;
+            opacity: 1;
+            transition: opacity 4s ease-in-out, transform 4s ease-in-out;
+            pointer-events: none;
+        }
+
+        #block-viewer.show {
+            opacity: 1;
+        }
+
+        #block-viewer canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .block-viewer-lore {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%) translateY(150px);
+            text-align: center;
+            width: 70%;
+            font-family: 'Minecraft';
+            font-size: 24px;
+            word-spacing: 7px;
+            max-width: 800px;
+            color: rgb(255, 255, 255);
+
+            transition: opacity 1s ease-in-out;
+        }
+
         @media (max-width: 800px) 
         {
+            .block-viewer-lore {
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                text-align: center;
+                width: 70%;
+                font-size: 14px;
+                max-width: 600px;
+            }
             #car-viewer {
                 position: absolute;
                 bottom: 0px;
@@ -1209,6 +1288,7 @@
 </head>
 <body>
     <div id="main">
+        <div class="fade-overlay"></div>
 
         <div class="grid-bg"></div>
 
@@ -1406,6 +1486,11 @@
                 <div class="book-turn-left"></div>
                 <div class="book-turn-right"></div>
             </div>
+        </div>
+
+        <div class="block-container">
+            <div id="block-viewer"></div>
+            <div class="block-viewer-lore">I LOVEE LOVEEE YOU VERYY VERYYYY MUCHY PO PAPA KOOO!! MMWAAHHH~ MWAHHH~<br>I MISS YOU PO..</div>
         </div>
         
         <audio id="turnSound" preload="auto"></audio>
@@ -1694,20 +1779,43 @@
             ballsObserver.observe(bl)
         })
 
+        if(localStorage.getItem('bookSeen')) 
+        {
+            document.querySelector('.book-item-lore').textContent = "You've read the book... Thank you papa.";
+        }
+
+        if(!localStorage.getItem('canShowBlock')) 
+        {
+            document.querySelector('.block-container').classList.add('hide')
+        }
+        else
+        {
+            document.querySelector('.block-container').classList.remove('hide');
+            // Renderer was initialized while hidden (0x0), fix it once module is ready
+            window.addEventListener('load', () => {
+                requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
+            });
+        }
+
         function getRandomObjectFromArray(arr = [])
         {
             return arr[Math.floor(Math.random() * arr.length)];
         }
 
         let currentToast = null;
+        let toastInSound = new Audio('sounds/in.ogg');
+        toastInSound.volume = 0.85;
+        let toastOutSound = new Audio('sounds/out.ogg');
+        toastOutSound.volume = 0.85;
 
-        function showToast(title, message, icon = 'icon/favicon.ico', duration = 5000)
+        function showToast(title, message, duration = 5000, icon = 'icon/favicon.ico')
         {
             if (currentToast) 
             {
                 currentToast.remove();
                 currentToast = null;
             }
+            toastInSound.play();
 
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1735,6 +1843,7 @@
                 start = Date.now();
                 timer = setTimeout(() => {
                     toast.classList.remove('visible');
+                    toastOutSound.play();
                     toast.addEventListener('transitionend', () => {
                         toast.remove();
                         currentToast = null;
@@ -1835,11 +1944,14 @@
         });
 
         book.addEventListener('click', (e) => {
-            if (e.target === book) {
+            if (e.target === book) 
+            {
                 book.classList.remove('active');
                 document.body.style.overflow = ''
                 playTurnSound(true, getRandomFloat(0.6, 1));
                 book.style.zIndex = '0'
+
+                triggerShowing();
             }
         });
 
@@ -1921,7 +2033,36 @@
             document.body.style.overflow = ''
             book.style.zIndex = '0';
             playTurnSound(true, getRandomFloat(0.6, 1));
+
+            triggerShowing();
         });
+
+        function triggerShowing()
+        {
+            if(currentPage >= pages.length - 1)
+            {
+                const alreadySeen = localStorage.getItem('bookRead');
+
+                if(!alreadySeen)
+                {
+                    localStorage.setItem('bookRead', 'true');
+                    fadeToWhite(3, 2, () => {
+                        hideAllDoc('show');
+                        window.scrollTo({ top: 0, behavior: 'instant' });
+                        document.querySelector('.book-item-lore').textContent = "You've read the book... Thank you papa.";
+                        notAloneAudio.loop = false;
+                        disableScrolling(false);
+                        localStorage.setItem('canShowBlock', 'true');
+                        document.querySelector('.block-container').classList.remove('hide');
+                        requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
+                    }, () => {
+                        setTimeout(() => {
+                            showToast('Notice', 'Scroll down!', 10*1000)
+                        }, 1000)
+                    })
+                }
+            }
+        }
 
         const floatObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -1952,7 +2093,7 @@
                     const el = entry.target;
                     if(!bookLoreToastShown)
                     {
-                        showToast('Notice', "You can click the book and see what's inside.");
+                        showToast('Notice', "You can click the book and see what's inside.", 10*1000);
                         bookLoreToastShown = true;
                     }
                     
@@ -1965,6 +2106,44 @@
 
         const bookLoreEl = document.querySelector('.book-item-lore');
         bookLore.observe(bookLoreEl);
+
+        function hideAllDoc(hideOrShow = 'hide')
+        {
+            switch(hideOrShow.toLowerCase())
+            {
+                case 'hide': 
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper').forEach(el => el.classList.add('hide-all'));
+                    break;
+                case 'show':
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper').forEach(el => el.classList.remove('hide-all'));
+                    break;
+            }
+        }
+
+        function fadeToWhite(duration = 1, hold = 1, onWhite, onComplete) 
+        {
+            const overlay = document.querySelector('.fade-overlay');
+            overlay.style.transition = `opacity ${duration}s ease`;
+            overlay.classList.add('active');
+
+            overlay.addEventListener('transitionend', () => {
+
+                if (onWhite) onWhite();
+
+                setTimeout(() => {
+                    overlay.style.transition = `opacity ${duration}s ease`;
+                    overlay.classList.remove('active');
+
+                    if (onComplete) {
+                        overlay.addEventListener('transitionend', onComplete, { once: true });
+                    }
+                }, hold * 1000);
+
+            }, { once: true });
+        }
+
+        window.fadeToWhite = fadeToWhite;
+        window.hideAllDoc = hideAllDoc;
 
     </script>
     
@@ -1982,13 +2161,30 @@
         import { Reflector } from 'three/addons/objects/Reflector.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
         
+        const alreadySeenForBook = localStorage.getItem('bookSeen');
+        const canShowBlock = localStorage.getItem('canShowBlock');
+
         const notAloneAudio = new Audio('songs/not_alone.mp3');
         notAloneAudio.volume = 0;
         notAloneAudio.loop = true;
         notAloneAudio.currentTime = 0;
 
+        window.notAloneAudio = notAloneAudio;
+
         const lerp = (a, b, t) => a + (b - a) * t;
         const mobileQuery = window.matchMedia("(max-width: 800px)");
+
+        //
+        //
+        //
+        //
+        // DERRRRRRRRRLORDDDDDDDDDDDDDDDDDDDDDDDDDDD
+        // ASASASASSASA
+        // ASSSSSSSSSSSSSSSSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        //
+        //
+        //
+        //
 
         const container = document.getElementById('model-viewer');
         const renderer = new THREE.WebGLRenderer({ 
@@ -2071,6 +2267,8 @@
             camera.updateProjectionMatrix();
             modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
         });
+
+        
 
         const carContainer = document.getElementById('car-viewer');
         const carRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "high-performance" });
@@ -2217,16 +2415,18 @@
                 if (entry.isIntersecting) 
                 {
                     const el = entry.target;
-                    notAloneVol = 1.0;
+
+                    if(alreadySeenForBook) return;
+
+                    notAloneVol = 0.5;
                     notAloneAudio.play();
 
-                    /* document.querySelector('#main > h1').style.display = 'none'; // or visibility: hidden
-                    document.querySelectorAll('.flex-stage').forEach(el => el.style.display = 'none');
-                    document.querySelectorAll('.Message2').forEach(el => el.style.display = 'none');
-                    document.querySelector('.ball-reveal').style.display = 'none';
-                    document.querySelector('h2').style.display = 'none';
-                    document.querySelector('.art-carousel').style.display = 'none';
-                    document.querySelector('.car-container').style.display = 'none'; */
+                    localStorage.setItem('bookSeen', 'true');
+                    hideAllDoc();
+                    disableScrolling(true);
+                    document.querySelector('.book-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    bookItemObs.unobserve(el);
                 }
             });
         }, { rootMargin: "0px 0px -100px 0px" });
@@ -2248,6 +2448,178 @@
             notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, 0.0001)
         }
         update();
+
+        //
+        //
+        //
+        //
+        // BLOCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+        // ASASASASSASA
+        // ASSSSSSSSSSSSSSSSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        //
+        //
+        //
+        //
+        
+        const blockContainer = document.getElementById('block-viewer');
+        const bRenderer = new THREE.WebGLRenderer({ 
+            alpha: true, 
+            antialias: true,
+            powerPreference: "high-performance"
+        });
+        bRenderer.setSize(blockContainer.clientWidth, blockContainer.clientHeight);
+        bRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+        bRenderer.setClearColor(0x000000, 0);
+        bRenderer.shadowMap.enabled = true;
+        bRenderer.shadowMap.type = THREE.PCFShadowMap;
+        blockContainer.appendChild(bRenderer.domElement);
+
+        const bScene = new THREE.Scene();
+        const bCamera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        bCamera.position.set(0, 1.5, 4);
+        bCamera.lookAt(0, 0.5, 0);
+
+        bScene.add(new THREE.AmbientLight(0xffffff, 1));
+
+        const BdirLight = new THREE.DirectionalLight(0xffffff, 2);
+        BdirLight.position.set(5, 20, 8);
+        BdirLight.castShadow = true;
+        BdirLight.shadow.mapSize.width = 1028;
+        BdirLight.shadow.mapSize.height = 1028;
+        bScene.add(BdirLight);
+
+        const bFloor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.4 }));
+        bFloor.rotation.x = -Math.PI / 2;
+        bFloor.receiveShadow = true;
+        bScene.add(bFloor);
+
+        const BtoAnim = [];
+        const bClock = new THREE.Timer();
+
+        const bLoader = new GLTFLoader();
+        let loadedModel = null;
+        let flowerNodes = [];
+        let bTime = 0;
+
+        bLoader.load('models/mc/Block.gltf', (gltf) => {
+            const model = gltf.scene;
+            gltf.scene.traverse((node) => {
+                if (node.isMesh) {
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+
+            model.position.set(-0.5, 0, -0.5);
+            const blueGroup = new THREE.Group();
+            const redGroup = new THREE.Group();
+
+            const bf1 = model.getObjectByName('blueflower1');
+            const bf2 = model.getObjectByName('blueflower2');
+            const r1 = model.getObjectByName('red1');
+            const r2 = model.getObjectByName('red2');
+
+            if (bf1 && bf2) 
+            {
+                const pos = bf1.position.clone(); //thanks i really glad theres a cloeeeeeee
+                blueGroup.position.copy(pos);
+                bf1.position.sub(pos);
+                bf2.position.sub(pos);
+                blueGroup.add(bf1, bf2);
+                model.add(blueGroup);
+            }
+
+            if (r1 && r2) 
+            {
+                const pos = r1.position.clone();
+                redGroup.position.copy(pos);
+                r1.position.sub(pos);
+                r2.position.sub(pos);
+                redGroup.add(r1, r2);
+                model.add(redGroup);
+            }
+
+            flowerNodes = [blueGroup, redGroup];
+
+            const pivot = new THREE.Object3D();
+            pivot.add(model);
+            bScene.add(pivot);
+
+            bFloor.position.y = 0;
+
+            pivot.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
+
+            loadedModel = pivot;
+
+            if (gltf.animations && gltf.animations.length > 0) {
+                const anims = new THREE.AnimationMixer(model);
+                anims.clipAction(gltf.animations[0]).play();
+                BtoAnim.push(anims);
+            }
+        }, undefined, (err) => console.error(err));
+
+        const FPS = 4;
+        const TICK = 1 / FPS;
+        let f = 0;
+
+        function animateBlock()
+        {
+            requestAnimationFrame(animateBlock);
+            bClock.update();
+            const delta = bClock.getDelta();
+            bTime += delta;
+
+            BtoAnim.forEach(a => a.update(delta));
+
+            f += delta;
+            if (f >= TICK) {
+                f %= TICK;
+
+                flowerNodes.forEach((group, i) => {
+                    group.rotation.z = Math.sin(bTime * .5 + i * 1.2) * 0.03;
+                    group.rotation.x = Math.cos(bTime * 1.0 + i * 1.2) * 0.01;
+                });
+            }
+
+            bRenderer.render(bScene, bCamera);
+        }
+        animateBlock();
+
+        window.addEventListener('resize', () => {
+            bRenderer.setSize(blockContainer.clientWidth, blockContainer.clientHeight);
+            bCamera.aspect = blockContainer.clientWidth / blockContainer.clientHeight;
+            bCamera.updateProjectionMatrix();
+            if (loadedModel) {
+                loadedModel.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
+            }
+        });
+
+        const disableScroll = (e) => e.preventDefault();
+
+        function disableScrolling(disable = true) 
+        {
+            if(disable)
+            {
+                window.addEventListener('wheel', disableScroll, { passive: false });
+                window.addEventListener('touchmove', disableScroll, { passive: false });
+            }
+            else
+            {
+                window.removeEventListener('wheel', disableScroll);
+                window.removeEventListener('touchmove', disableScroll);
+            }
+        }
+
+        window.disableScrolling = disableScrolling;
+
+        window.refreshBlockRenderer = () => {
+            bRenderer.setSize(blockContainer.clientWidth, blockContainer.clientHeight);
+            bCamera.aspect = blockContainer.clientWidth / blockContainer.clientHeight;
+            bCamera.updateProjectionMatrix();
+            if (loadedModel) {
+                loadedModel.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
+            }
+        };
     </script>
 </body>
 </html>
