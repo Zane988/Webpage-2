@@ -2284,7 +2284,7 @@
 
         const carDirLight = new THREE.DirectionalLight(0xffffff, 1);
         carDirLight.position.set(5, 20, 8);
-        carDirLight.castShadow = true;
+        carDirLight.castShadow = false;
         carScene.add(carDirLight);
 
         const pmremGenerator = new THREE.PMREMGenerator(carRenderer);
@@ -2318,6 +2318,7 @@
         {
             if (carModel) 
             {
+                disposeModel(carModel)
                 carScene.remove(carModel);
                 carModel = null;
             }
@@ -2484,8 +2485,8 @@
         const BdirLight = new THREE.DirectionalLight(0xffffff, 2);
         BdirLight.position.set(5, 20, 8);
         BdirLight.castShadow = true;
-        BdirLight.shadow.mapSize.width = 1028;
-        BdirLight.shadow.mapSize.height = 1028;
+        BdirLight.shadow.mapSize.width = 512;
+        BdirLight.shadow.mapSize.height = 512;
         bScene.add(BdirLight);
 
         const bFloor = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: 0.4 }));
@@ -2620,6 +2621,39 @@
                 loadedModel.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
             }
         };
+
+        function disposeModel(model) 
+        {
+            model.traverse((obj) => {
+                if (!obj.isMesh) return;
+
+                obj.geometry?.dispose();
+
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) 
+                    {
+                        obj.material.forEach(mat => disposeMaterial(mat));
+                    } 
+                    else 
+                    {
+                        disposeMaterial(obj.material);
+                    }
+                }
+            });
+        }
+
+        function disposeMaterial(mat) 
+        {
+            for (const key in mat) 
+            {
+                const value = mat[key];
+                if (value && value.isTexture) 
+                {
+                    value.dispose();
+                }
+            }
+            mat.dispose();
+        }
     </script>
 </body>
 </html>
