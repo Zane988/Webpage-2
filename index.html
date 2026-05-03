@@ -1333,8 +1333,13 @@
                 <img id="big-img">
                 <div class="lb-heart">🤍</div>
             </div>
-            
         </div>
+
+        <div class="car-container">
+            <div id="car-viewer"></div>
+            <div class="car-viewer-lore"></div>
+        </div>
+
         <div class="book-container">
             <div class="grass"></div>
             <div id="model-viewer"></div>
@@ -1358,11 +1363,6 @@
         </div>
         
         <audio id="turnSound" preload="auto"></audio>
-
-        <div class="car-container">
-            <div id="car-viewer"></div>
-            <div class="car-viewer-lore">His Dream Cars</div>
-        </div>
         
         <div class="nav-wrapper">
             <div class="nav">
@@ -1921,6 +1921,7 @@
         bookLore.observe(bookLoreEl);
 
     </script>
+    
     <script type="importmap">
     {
         "imports": {
@@ -1932,7 +1933,9 @@
     <script type="module">
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-
+        import { Reflector } from 'three/addons/objects/Reflector.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+        
         const mobileQuery = window.matchMedia("(max-width: 800px)");
 
         const container = document.getElementById('model-viewer');
@@ -1945,7 +1948,7 @@
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
         renderer.setClearColor(0x000000, 0);
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
         container.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
@@ -2027,13 +2030,17 @@
         const carScene = new THREE.Scene();
         const carCamera = new THREE.PerspectiveCamera(45, carContainer.clientWidth / carContainer.clientHeight, 0.1, 10000);
 
-        carScene.add(new THREE.AmbientLight(0xffffff, 1));
+        carScene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        const carDirLight = new THREE.DirectionalLight(0xffffff, 7);
+        const carDirLight = new THREE.DirectionalLight(0xffffff, 1);
         carDirLight.position.set(5, 20, 8);
-        carDirLight.castShadow = false;
+        carDirLight.castShadow = true;
         carScene.add(carDirLight);
 
+        const pmremGenerator = new THREE.PMREMGenerator(carRenderer);
+        const carEnv = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+        carScene.environment = carEnv;
+        
         const cars = 
         [
             'models/gtr/aimgain-r35-type2/scene.gltf',
