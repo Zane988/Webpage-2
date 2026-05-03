@@ -851,10 +851,17 @@
             position: absolute;
             bottom: -50px;
             left: 50%;
-            transform: translateX(-505px);
+            transform: translateX(-905px);
             width: 720px;
             height: 720px;
+            opacity: 0;
+            transition: opacity 4s ease-in-out, transform 4s ease-in-out;
             pointer-events: none;
+        }
+
+        #car-viewer.show {
+            opacity: 1;
+            transform: translateX(-505px);
         }
 
         #car-viewer canvas {
@@ -872,7 +879,12 @@
             font-weight: bolder;
             font-size: 18px;
             color: white;
-            transition: all 0.3s ease-in-out;
+            opacity: 0;
+            transition: all 0.3s ease-in-out, opacity 0.6s ease;
+        }
+
+        .car-viewer-lore.show {
+            opacity: 1;
         }
 
         .car-name {
@@ -891,9 +903,13 @@
                 position: absolute;
                 bottom: 0px;
                 left: 50%;
-                transform: translateX(-285px);
+                transform: translateX(-580px);
                 width: 560px;
                 height: 560px;
+            }
+
+            #car-viewer.show {
+                transform: translateX(-285px);
             }
 
             .car-name {
@@ -916,7 +932,8 @@
                 text-align: center;
                 font-size: 14px;
                 color: white;
-                transition: all 0.3s ease-in-out;
+                opacity: 0;
+                transition: all 0.3s ease-in-out, opacity 0.6s ease;
                 right: unset;
             }
 
@@ -1338,6 +1355,35 @@
         <div class="car-container">
             <div id="car-viewer"></div>
             <div class="car-viewer-lore"></div>
+        </div>
+
+        <!-- this for the carsy -->
+
+        <div class="flex-stage">
+            <div class="text-container text-left">
+                <p>HOLYY This one po huhu ang ganda bumagay ung kulay red sa gabi HAHAAH GTR-34 po tong nakita ko po e pero idk what kind of model po like '45Jk something AHAHAHA'</p>
+            </div>
+            <div class="image_coster1 img-right">
+                <img src="cars/nissan-gtr34.jpg" alt="Coaster">
+            </div>
+        </div>
+
+        <div class="flex-stage">
+            <div class="image_coster1 img-left">
+                <img src="cars/ferrari.png" alt="Second Image class" class="photo-crop">
+            </div>
+            <div class="text-container text-right">
+                <p>Eto naman po Ferrari mga share post mo po dati nakikita ko to eh, diko lang po sure if maabilis ang mga Ferrari pero meron jan sa taas po 3D Model ng Ferrari!</p>
+            </div>
+        </div>
+
+        <div class="flex-stage">
+            <div class="text-container text-left">
+                <p>Etoo naman po GTR R33 Skyline same lang po ata dun na Nissan kasi pag ni search ko po same parin e HAHAHA i mean Nissan and ganda po ng shot here kaya pinili kopo this.</p>
+            </div>
+            <div class="image_coster1 img-right">
+                <img src="cars/r33skyline.jpg" alt="Coaster">
+            </div>
         </div>
 
         <div class="book-container">
@@ -1936,6 +1982,12 @@
         import { Reflector } from 'three/addons/objects/Reflector.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
         
+        const notAloneAudio = new Audio('songs/not_alone.mp3');
+        notAloneAudio.volume = 0;
+        notAloneAudio.loop = true;
+        notAloneAudio.currentTime = 0;
+
+        const lerp = (a, b, t) => a + (b - a) * t;
         const mobileQuery = window.matchMedia("(max-width: 800px)");
 
         const container = document.getElementById('model-viewer');
@@ -2059,6 +2111,8 @@
 
         let currentCarIndex = 0;
         let carModel;
+        
+        let canSpin = false;
 
         const carLoader = new GLTFLoader();
 
@@ -2088,6 +2142,7 @@
                 carCamera.lookAt(0, 0, 0);
                 carCamera.updateProjectionMatrix();
 
+                carModel.rotation.y = 7.8;
             }, undefined, (err) => console.error(err));
         }
 
@@ -2097,10 +2152,18 @@
 
         setInterval(() => 
         {
-            currentCarIndex = (currentCarIndex + 1) % cars.length;
-            loadCar(cars[currentCarIndex]);
+            if(!canSpin) return;
 
-            changeLoreTxt(currentCarIndex)
+            loreTxt.classList.remove('show');
+
+            setTimeout(() => {
+                currentCarIndex = (currentCarIndex + 1) % cars.length;
+                loadCar(cars[currentCarIndex]);
+                changeLoreTxt(currentCarIndex);
+
+                loreTxt.classList.add('show');
+            }, 400);
+
         }, 8000);
 
         function changeLoreTxt(ind)
@@ -2110,15 +2173,10 @@
             const desc = parts.slice(1).join('\n');
             loreTxt.innerHTML = `<span class="car-name">${name}</span>${desc}`;
         }
-        changeLoreTxt(0)
-
-        function animateCar() 
-        {
-            requestAnimationFrame(animateCar);
-            if (carModel) carModel.rotation.y += 0.008;
-            carRenderer.render(carScene, carCamera);
-        }
-        animateCar();
+        
+        let curSpin = 0;
+        let tarSpin = 0;
+        let notAloneVol = 0.0;
 
         window.addEventListener('resize', () => 
         {
@@ -2126,6 +2184,70 @@
             carCamera.aspect = carContainer.clientWidth / carContainer.clientHeight;
             carCamera.updateProjectionMatrix();
         });
+
+        const carShow = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) 
+                {
+                    const el = entry.target;
+                    
+                    el.classList.add('show');
+                    carShow.unobserve(el);
+                }
+            });
+        }, { threshold: 0.35});
+
+        const carViewEl = document.querySelector('#car-viewer');
+        carShow.observe(carViewEl);
+
+        carViewEl.addEventListener('transitionend', (e) => 
+        {
+            if (e.propertyName === 'transform')
+            {
+                canSpin = true;
+                changeLoreTxt(0);
+                tarSpin = 0.009;
+
+                loreTxt.classList.add('show');
+            }
+        });
+
+        const bookItemObs = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) 
+                {
+                    const el = entry.target;
+                    notAloneVol = 1.0;
+                    notAloneAudio.play();
+
+                    /* document.querySelector('#main > h1').style.display = 'none'; // or visibility: hidden
+                    document.querySelectorAll('.flex-stage').forEach(el => el.style.display = 'none');
+                    document.querySelectorAll('.Message2').forEach(el => el.style.display = 'none');
+                    document.querySelector('.ball-reveal').style.display = 'none';
+                    document.querySelector('h2').style.display = 'none';
+                    document.querySelector('.art-carousel').style.display = 'none';
+                    document.querySelector('.car-container').style.display = 'none'; */
+                }
+            });
+        }, { rootMargin: "0px 0px -100px 0px" });
+
+        document.querySelectorAll('.float-inner').forEach(el => {
+            bookItemObs.observe(el);
+        });
+
+        function update() 
+        {
+            requestAnimationFrame(update);
+
+            curSpin = lerp(curSpin, tarSpin, 0.001);
+
+            if (carModel && canSpin) 
+                carModel.rotation.y += curSpin;
+            carRenderer.render(carScene, carCamera);
+
+            notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, 0.0001)
+        }
+        update();
     </script>
 </body>
 </html>
