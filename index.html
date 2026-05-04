@@ -1902,18 +1902,44 @@
             }
         }
 
-        function handleFirstInteraction() 
-        {
-            showFirstTimeToast();
+        let firstInteractionDone = false;
 
+        function showFirstTimeToast() 
+        {
+            if (firstInteractionDone) return;
+            firstInteractionDone = true;
+
+            const t = localStorage.getItem("tipsToastShown");
+
+            if (!t) {
+                localStorage.setItem('tipsToastShown', 'true');
+                setTimeout(() => {
+                    showToast('Notice', 'Pa! para ma unlock mo lahat, scroll down and read!');
+
+                    setTimeout(() => {
+                        showToast('Notice', 'Find my Book and Quill po sa baba..', toThousands(3));
+
+                        setTimeout(() => {
+                            showToast('Tips', 'Navigation will unlock until you read all the content of my book po.', toThousands(10));
+                        }, toThousands(8));
+                    }, toThousands(8));
+                }, toThousands(3));
+            }
+        }
+
+        function handleFirstInteraction()
+        {
             document.removeEventListener('click', handleFirstInteraction);
             document.removeEventListener('scroll', handleFirstInteraction);
             document.removeEventListener('touchstart', handleFirstInteraction);
+
+            showFirstTimeToast();
+            unlockAudio()
         }
 
         document.addEventListener('click', handleFirstInteraction);
         document.addEventListener('scroll', handleFirstInteraction);
-        document.addEventListener('touchstart', handleFirstInteraction);
+        document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
 
         let currentToast = null;
 
@@ -2152,6 +2178,7 @@
             "Please po do not think that i am angry to you ha?? Don't please. Always ko nga chineckeck messenger ko or IG po ehh and TikTok.. kaso na unfllow mo po pala ako :( di po ako galit ha?",
             "I wanna chat nga po ikaw e.. alam ko sinabi mo na wag or hinahayaan mo nalan na magsawa ako.. but hindi po ako magsasawa sa mahal ko.\nI'm always here po papa if want mo kausap, i'll always wait for you po papaaa kooooo!",
             "I hope we could try again.. if someday you want, just text me..",
+            "I really want to mag kwento po sayo ng mga bagay bagay, mag-joke po and things :(",
             "You are my dream po papa, makasama sa buong buhay ko po.. I'm really sorry po..",
             "I really hope na naabutan mo po hanggang dito, i'll probably aalis rin po bukas. HAPPY 1yr and 8th MONTHSARY PAPA!\nI LOVEEE LOVEEE YOUUU VERYYY VERYYY MUCHH PO ULITTTT!! MWAAHH!~ I'm sorry po ulit.. and apologies accepted po\n\n               -Andrew"
         ];
@@ -2212,11 +2239,10 @@
                 if(!alreadySeen)
                 {
                     localStorage.setItem('bookRead', 'true');
-                    notAloneAudio.volume = 0;
-                    notAloneAudio.pause();
-                    notAloneAudio.currentTime = 0;
+                    setAudioLerp(0.01);
+                    setNotAloneVol(0.0)
 
-                    playSoundWithPitch('sounds/challenge-complete.ogg', getRandomFloat(0.5, 0.8));
+                    playSoundWithPitch('sounds/challenge-complete.ogg', getRandomFloat(0.5, 1));
                     
                     setTimeout(() => {
                         showToast('YEYYYYY', 'Thank you for reading pa..')
@@ -2230,6 +2256,10 @@
                                 notAloneAudio.loop = false;
                                 disableScrolling(false);
                                 localStorage.setItem('canShowBlock', 'true');
+
+                                notAloneAudio.volume = 0;
+                                notAloneAudio.pause();
+                                notAloneAudio.currentTime = 0;
 
                                 document.querySelector('.block-container').classList.remove('hide');
                                 document.querySelector('.book-container').classList.add('move');
@@ -2344,6 +2374,7 @@
 
         window.fadeToWhite = fadeToWhite;
         window.hideAllDoc = hideAllDoc;
+        window.playSoundWithPitch = playSoundWithPitch;
 
     </script>
     
@@ -2375,6 +2406,9 @@
         let curSpin = 0;
         let tarSpin = 0;
         let notAloneVol = 0.0;
+        let lerpAudioElapsed = 0.0001;
+
+        window.setAudioLerp = (v) => { lerpAudioElapsed = v; };
 
         const lerp = (a, b, t) => a + (b - a) * t;
         const mobileQuery = window.matchMedia("(max-width: 800px)");
@@ -2681,14 +2715,17 @@
                     document.querySelector('.book-container').classList.add('move');
 
                     notAloneVol = 0.2;
+                    notAloneAudio.currentTime = 0;
                     notAloneAudio.play();
 
                     localStorage.setItem('bookSeen', 'true');
                     hideAllDoc();
+                    playSoundWithPitch('sounds/strike.mp3', 1, 1);
+
                     disableScrolling(true);
                     setTimeout(() => {
                         document.querySelector('.book-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 500);
+                    }, 200);
                     bookItemObs.unobserve(el);
                 }
             });
@@ -2709,7 +2746,7 @@
             requestAnimationFrame(update);
 
             // Always lerp audio volume regardless of visibility
-            notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, 0.0001);
+            notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, lerpAudioElapsed);
 
             if (!carVisible) return;
 
