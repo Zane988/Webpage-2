@@ -1862,6 +1862,21 @@
             });
         }
 
+        function unlockAudio() 
+        {
+            const audio = window.notAloneAudio;
+
+            if (audio && audio.paused) 
+            {
+                audio.play().catch(() => {});
+            }
+
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        }
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+
         function toThousands(htmlTime = 1)
         {
             return htmlTime * 1000;
@@ -2092,7 +2107,22 @@
                 _audioBufferCache[src] = audioBuffer;
                 _play(audioBuffer);
             });
+
+            if (audioCtx.state === 'suspended') 
+            {
+                audioCtx.resume();
+            }
         }
+
+        function resumeAudioContext() 
+        {
+            if (audioCtx.state === 'suspended') 
+            {
+                audioCtx.resume();
+            }
+        }
+        document.addEventListener('click', resumeAudioContext);
+        document.addEventListener('touchstart', resumeAudioContext);
 
         const pages = [
             "HELLOOOO POOOO PAPAAA KOOOOOOOOOOOOO,\nyou found the book and quill po didn't you? HAHAHA buti di pa po nag dedespawn!!\nI made this for you po papa, actually dapat nung 1yr and 17th monthsary natin\nkaso po wala napo time e and weeks kona po to ginawa..",
