@@ -1904,10 +1904,6 @@
         showFirstTimeToast();
 
         let currentToast = null;
-        let toastInSound = new Audio('sounds/in.ogg');
-        toastInSound.volume = 0.85;
-        let toastOutSound = new Audio('sounds/out.ogg');
-        toastOutSound.volume = 0.85;
 
         function showToast(title, message, duration = 5000, icon = 'icon/favicon.ico')
         {
@@ -1916,8 +1912,7 @@
                 currentToast.remove();
                 currentToast = null;
             }
-            toastInSound.currentTime = 0;
-            toastInSound.play().catch(() => {});
+            playSoundWithPitch('sounds/in.ogg', 1);
 
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1945,8 +1940,7 @@
                 start = Date.now();
                 timer = setTimeout(() => {
                     toast.classList.remove('visible');
-                    toastOutSound.currentTime = 0;
-                    toastOutSound.play().catch(() => {});
+                    playSoundWithPitch('sounds/out.ogg', 1);
                     toast.addEventListener('transitionend', () => {
                         toast.remove();
                         currentToast = null;
@@ -2072,10 +2066,7 @@
         {
             if(!isOpenSound)
             {
-                turnSoundEl.src = `book/sounds/page_turn${getRandomInt(1, 3)}.ogg`;
-                turnSoundEl.currentTime = 0;
-                
-                turnSoundEl.play().catch(() => {});
+                playSoundWithPitch(`book/sounds/page_turn${getRandomInt(1, 3)}.ogg`, 1);
             }
             else
                 playSoundWithPitch('book/sounds/book-open.mp3', pitch)
@@ -2084,23 +2075,14 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const _audioBufferCache = {};
 
-        //FIX
-        function _unlockAudio() 
-        {
+        // Resume AudioContext on first user gesture (required by mobile browsers).
+        function _unlockAudio() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            [toastInSound, toastOutSound, turnSoundEl].forEach(el => {
-                if (!el) return;
-                const prev = el.volume;
-                el.volume = 0;
-                el.play().then(() => { el.pause(); el.currentTime = 0; el.volume = prev; }).catch(() => {});
-            });
-            document.removeEventListener('touchstart', _unlockAudio);
-            document.removeEventListener('click', _unlockAudio);
         }
         document.addEventListener('touchstart', _unlockAudio, { once: true });
         document.addEventListener('click', _unlockAudio, { once: true });
 
-        function playSoundWithPitch(src, pitch = 1) 
+        function playSoundWithPitch(src, pitch = 1, volume = 0.85) 
         {
             function _play(audioBuffer) 
             {
@@ -2108,7 +2090,10 @@
                 const source = audioCtx.createBufferSource();
                 source.buffer = audioBuffer;
                 source.playbackRate.value = pitch;
-                source.connect(audioCtx.destination);
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = volume;
+                source.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
                 source.start(0);
             }
 
