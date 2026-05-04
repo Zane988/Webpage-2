@@ -74,6 +74,10 @@
             box-shadow: 0 5px 10px rgba(0, 0, 0, 0.9);
             z-index: 0;
         }
+
+        .nav-wrapper.firstHide {
+            display: none;
+        }
         
         .nav {
             height: 100%;
@@ -1847,10 +1851,12 @@
         if(!localStorage.getItem('canShowBlock')) 
         {
             document.querySelector('.block-container').classList.add('hide')
+            document.querySelector('.nav-wrapper').classList.add('firstHide')
         }
         else
         {
             document.querySelector('.block-container').classList.remove('hide');
+            document.querySelector('.nav-wrapper').classList.remove('firstHide')
             window.addEventListener('load', () => {
                 requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
             });
@@ -2120,11 +2126,16 @@
                         localStorage.setItem('canShowBlock', 'true');
                         document.querySelector('.block-container').classList.remove('hide');
                         document.querySelector('.book-container').classList.add('move');
+                        document.querySelector('.nav-wrapper').classList.remove('firstHide')
                         requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
                     }, () => {
                         setTimeout(() => {
-                            showToast('Notice', 'Scroll down!', 10*1000)
+                            showToast('Notice', 'Scroll down!', 6*1000)
                         }, 1000)
+
+                        setTimeout(() => {
+                            showToast('Notice', 'You unlocked the Navigation Tab! Explore more papa, scroll down!', 10*1000)
+                        }, 7*1000)
                     })
                 }
             }
@@ -2701,7 +2712,7 @@
             }
         }, undefined, (err) => console.error(err));
 
-        const FPS = 4;
+        const FPS = 8;
         const TICK = 1 / FPS;
         let f = 0;
 
