@@ -1901,7 +1901,7 @@
                 currentToast.remove();
                 currentToast = null;
             }
-            playSoundWithPitch('sounds/in.ogg', 1)
+            playSoundWithPitch('sounds/in.ogg', 1, 0.5)
 
             const toast = document.createElement('div');
             toast.className = 'toast';
@@ -1929,7 +1929,7 @@
                 start = Date.now();
                 timer = setTimeout(() => {
                     toast.classList.remove('visible');
-                    playSoundWithPitch('sounds/out.ogg', 1);
+                    playSoundWithPitch('sounds/out.ogg', 1, 0.5);
 
                     toast.addEventListener('transitionend', () => {
                         toast.remove();
@@ -2068,14 +2068,17 @@
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const _audioBufferCache = {};
 
-        function playSoundWithPitch(src, pitch = 1) 
+        function playSoundWithPitch(src, pitch = 1, volume = 1) 
         {
             function _play(audioBuffer) 
             {
                 const source = audioCtx.createBufferSource();
                 source.buffer = audioBuffer;
                 source.playbackRate.value = pitch;
-                source.connect(audioCtx.destination);
+                const gainNode = audioCtx.createGain();
+                gainNode.gain.value = volume;
+                source.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
                 source.start(0);
             }
 
