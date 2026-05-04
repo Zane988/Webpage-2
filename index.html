@@ -2152,7 +2152,7 @@
                     const el = entry.target;
                     if(!bookLoreToastShown)
                     {
-                        showToast('Notice', "You can click the book and see what's inside.", 10*1000);
+                        setTimeout(()=> showToast('Notice', "You can click the book and see what's inside.", 10*1000), 2000)
                         bookLoreToastShown = true;
                     }
                     
@@ -2706,7 +2706,7 @@
         {
             requestAnimationFrame(animateBlock);
 
-            console.log(notAloneAudio.volume)
+            //console.log(notAloneAudio.volume)
             if (!blockVisible) return;
 
             bClock.update();
