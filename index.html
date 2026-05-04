@@ -615,6 +615,10 @@
             overflow: hidden;
         }
 
+        .book-container.move {
+            bottom: 65px;
+        }
+
         .book-back {
             position: fixed;
             opacity: 0;
@@ -1826,6 +1830,8 @@
         if(localStorage.getItem('bookSeen') && !localStorage.getItem('bookRead'))
         {
             window.addEventListener('load', () => {
+                document.querySelector('.book-container').classList.add('move');
+                
                 window.hideAllDoc && window.hideAllDoc();
                 window.disableScrolling && window.disableScrolling(true);
                 if (window.notAloneAudio) 
@@ -2113,6 +2119,7 @@
                         disableScrolling(false);
                         localStorage.setItem('canShowBlock', 'true');
                         document.querySelector('.block-container').classList.remove('hide');
+                        document.querySelector('.book-container').classList.add('move');
                         requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
                     }, () => {
                         setTimeout(() => {
@@ -2160,7 +2167,7 @@
                     floatObserver.unobserve(el);
                 }
             });
-        }, { rootMargin: "0px 0px -50px 0px" });
+        }, { rootMargin: "0px 0px 0px 0px" });
 
 
         const bookLoreEl = document.querySelector('.book-item-lore');
@@ -2542,6 +2549,7 @@
                     const el = entry.target;
 
                     if(alreadySeenForBook) return;
+                    document.querySelector('.book-container').classList.add('move');
 
                     notAloneVol = 0.2;
                     notAloneAudio.play();
@@ -2549,8 +2557,9 @@
                     localStorage.setItem('bookSeen', 'true');
                     hideAllDoc();
                     disableScrolling(true);
-                    document.querySelector('.book-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
-
+                    setTimeout(() => {
+                        document.querySelector('.book-container').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 500);
                     bookItemObs.unobserve(el);
                 }
             });
