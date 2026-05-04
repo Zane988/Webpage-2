@@ -73,7 +73,6 @@
         .nav {
             height: 100%;
             display: flex;
-            justify-content: center;
             align-items: center;
             gap: 30px;
             justify-content: space-between;
@@ -869,17 +868,16 @@
             position: absolute;
             bottom: -50px;
             left: 50%;
-            transform: translateX(-905px);
+            transform: translateX(-505px);
             width: 720px;
             height: 720px;
             opacity: 0;
-            transition: opacity 4s ease-in-out, transform 4s ease-in-out;
+            transition: opacity 3s ease-in-out, transform 4s ease-in-out;
             pointer-events: none;
         }
 
         #car-viewer.show {
             opacity: 1;
-            transform: translateX(-505px);
         }
 
         #car-viewer canvas {
@@ -919,7 +917,7 @@
             position: relative;
             bottom: -50px;
             width: 100%;
-            height: 350px;
+            height: 200px;
             margin: auto;
             left: 50%;
             transform: translateX(-50%);
@@ -956,7 +954,7 @@
             left: 50%;
             transform: translateX(-50%) translateY(150px);
             text-align: center;
-            width: 70%;
+            width: 100%;
             font-family: 'Minecraft';
             font-size: 24px;
             word-spacing: 7px;
@@ -982,13 +980,9 @@
                 position: absolute;
                 bottom: 0px;
                 left: 50%;
-                transform: translateX(-580px);
+                transform: translateX(-285px);
                 width: 560px;
                 height: 560px;
-            }
-
-            #car-viewer.show {
-                transform: translateX(-285px);
             }
 
             .car-name {
@@ -1035,7 +1029,7 @@
             }
 
             .grass {
-                inset: -50px;
+                inset: -30px;
                 background: url('minecraft/mc-grass.png') center / 600px no-repeat;
             }
 
@@ -1186,10 +1180,6 @@
                 }
             }
 
-            body {
-                padding-bottom: 100px;
-            }
-
             /*QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ*/
 
             .flex-stage {
@@ -1253,27 +1243,23 @@
 
             .img-left,
             .img-right { 
-                transform: translateX(0); 
                 transform: translateY(30px); 
             }
 
             .img-left.visible,
             .img-right.visible {
                 opacity: 1;
-                transform: translateX(0);
                 transform: translateY(0); 
             }
 
             .text-left,
             .text-right { 
-                transform: translateX(0); 
                 transform: translateY(30px); 
             }
 
             .text-left.visible,
             .text-right.visible {
                 opacity: 1;
-                transform: translateX(0);
                 transform: translateY(0); 
             }
 
@@ -1283,6 +1269,42 @@
 
                 width: 50%
             }
+
+            body {
+                margin-bottom: -100px
+            }
+        }
+
+        .car-reflect-wrap {
+            display: flex;
+            justify-content: center;
+            margin: -20px 0 40px;
+        }
+
+        .reflect-btn {
+            background: rgba(49, 49, 49, 0.05);
+            border: 2.5px solid rgba(77, 77, 77, 0.432);
+            color: #3b3b3b;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 15px 30px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .reflect-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.829);
+        }
+
+        .reflect-btn.active {
+            background: rgba(141, 141, 141, 0.12);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(255, 255, 255, 0.288);
         }
     </style>
 </head>
@@ -1436,6 +1458,9 @@
             <div id="car-viewer"></div>
             <div class="car-viewer-lore"></div>
         </div>
+        <div class="car-reflect-wrap">
+            <button id="reflectBtn" class="reflect-btn">Enable Reflective Environment</button>
+        </div>
 
         <!-- this for the carsy -->
 
@@ -1571,6 +1596,9 @@
         const canvas = document.getElementById('fisheyeCanvas');
         const gl = canvas.getContext('webgl');
 
+        canvas.width = canvas.height = 300;
+        gl.viewport(0, 0, 300, 300);
+
         const pts = new Float32Array([
             -1,-1, 1,-1, -1,1,
             -1,1, 1,-1, 1,1
@@ -1665,12 +1693,9 @@
         {
             const time = now * 0.001;
 
-            canvas.width = canvas.height = 300;
-            gl.viewport(0, 0, 300, 300);
-
             if (isBlack) 
             {
-                gl.clearColor(255, 255,255, 1);
+                gl.clearColor(1.0, 1.0, 1.0, 1.0);
                 gl.clear(gl.COLOR_BUFFER_BIT);
             } 
             else 
@@ -1791,15 +1816,9 @@
         else
         {
             document.querySelector('.block-container').classList.remove('hide');
-            // Renderer was initialized while hidden (0x0), fix it once module is ready
             window.addEventListener('load', () => {
                 requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
             });
-        }
-
-        function getRandomObjectFromArray(arr = [])
-        {
-            return arr[Math.floor(Math.random() * arr.length)];
         }
 
         let currentToast = null;
@@ -1979,17 +1998,28 @@
         }
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const _audioBufferCache = {};
 
         function playSoundWithPitch(src, pitch = 1) 
         {
-            fetch(src).then(res => res.arrayBuffer()).then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer)).then(audioBuffer => {
+            function _play(audioBuffer) 
+            {
                 const source = audioCtx.createBufferSource();
                 source.buffer = audioBuffer;
-
                 source.playbackRate.value = pitch;
-
                 source.connect(audioCtx.destination);
                 source.start(0);
+            }
+
+            if (_audioBufferCache[src]) 
+            {
+                _play(_audioBufferCache[src]);
+                return;
+            }
+
+            fetch(src).then(res => res.arrayBuffer()).then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer)).then(audioBuffer => {
+                _audioBufferCache[src] = audioBuffer;
+                _play(audioBuffer);
             });
         }
 
@@ -2101,7 +2131,7 @@
                     floatObserver.unobserve(el);
                 }
             });
-        }, { rootMargin: "0px 0px -100px 0px" });
+        }, { rootMargin: "0px 0px -50px 0px" });
 
 
         const bookLoreEl = document.querySelector('.book-item-lore');
@@ -2112,10 +2142,10 @@
             switch(hideOrShow.toLowerCase())
             {
                 case 'hide': 
-                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper').forEach(el => el.classList.add('hide-all'));
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-warp').forEach(el => el.classList.add('hide-all'));
                     break;
                 case 'show':
-                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper').forEach(el => el.classList.remove('hide-all'));
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-warp').forEach(el => el.classList.remove('hide-all'));
                     break;
             }
         }
@@ -2241,6 +2271,10 @@
             modelGroup.add(model);
             modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
 
+            modelGroup.rotation.x = 0.35;
+            modelGroup.rotation.y = 4.1;
+            modelGroup.rotation.z = 0.07;
+
             if (gltf.animations && gltf.animations.length > 0) 
             {
                 const anims = new THREE.AnimationMixer(model);
@@ -2249,15 +2283,19 @@
             }
         }, undefined, (err) => console.error(err));
 
+        let modelVisible = false;
+        const modelVisObs = new IntersectionObserver(entries => {
+            modelVisible = entries[0].isIntersecting;
+        }, { threshold: 0 });
+        modelVisObs.observe(container);
+
         function animate() 
         {
             requestAnimationFrame(animate);
+            if (!modelVisible) return;
             const delta = clock.getDelta();
             toAnim.forEach(a => a.update(delta));
             renderer.render(scene, camera);
-            modelGroup.rotation.x = 0.35;
-            modelGroup.rotation.y = 4.1;
-            modelGroup.rotation.z = 0.07;
         }
         animate();
 
@@ -2268,7 +2306,17 @@
             modelGroup.scale.setScalar(mobileQuery.matches ? 0.65 : 0.8);
         });
 
-        
+        //
+        //
+        //
+        //
+        // CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARRRRRRRRRASA
+        // ASASASASSASA
+        // ASSSSSSSSSSSSSSSSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        //
+        //
+        //
+        //
 
         const carContainer = document.getElementById('car-viewer');
         const carRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "high-performance" });
@@ -2282,14 +2330,58 @@
 
         carScene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
-        const carDirLight = new THREE.DirectionalLight(0xffffff, 1);
+        const carDirLight = new THREE.DirectionalLight(0xffffff, 8);
         carDirLight.position.set(5, 20, 8);
         carDirLight.castShadow = false;
         carScene.add(carDirLight);
 
-        const pmremGenerator = new THREE.PMREMGenerator(carRenderer);
-        const carEnv = pmremGenerator.fromScene(new RoomEnvironment()).texture;
-        carScene.environment = carEnv;
+        /* Reflective environment — toggled by button, off by default */
+        let carEnvTexture = null;
+        let reflectEnabled = false;
+
+        function enableReflection() 
+        {
+            if (carEnvTexture) 
+            {
+                carScene.environment = carEnvTexture;
+                return;
+            }
+            const pmrem = new THREE.PMREMGenerator(carRenderer);
+            carEnvTexture = pmrem.fromScene(new RoomEnvironment()).texture;
+            pmrem.dispose();
+            carScene.environment = carEnvTexture;
+
+            carDirLight.intensity = 1;
+        }
+
+        function disableReflection() 
+        {
+            carScene.environment = null;
+            if (carEnvTexture) 
+            {
+                carEnvTexture.dispose();
+                carEnvTexture = null;
+            }
+
+            carDirLight.intensity = 8;
+        }
+
+        const reflectBtn = document.getElementById('reflectBtn');
+        reflectBtn.addEventListener('click', () => {
+            reflectEnabled = !reflectEnabled;
+            if (reflectEnabled) 
+            {
+                enableReflection();
+                reflectBtn.textContent = 'Disable Reflective Environment';
+                reflectBtn.classList.add('active');
+            }
+            else 
+            {
+                disableReflection();
+                reflectBtn.textContent = 'Enable Reflective Environment';
+                reflectBtn.classList.remove('active');
+            }
+        });
         
         const cars = 
         [
@@ -2349,22 +2441,6 @@
 
         const loreTxt = document.querySelector('.car-viewer-lore');
 
-        setInterval(() => 
-        {
-            if(!canSpin) return;
-
-            loreTxt.classList.remove('show');
-
-            setTimeout(() => {
-                currentCarIndex = (currentCarIndex + 1) % cars.length;
-                loadCar(cars[currentCarIndex]);
-                changeLoreTxt(currentCarIndex);
-
-                loreTxt.classList.add('show');
-            }, 400);
-
-        }, 8000);
-
         function changeLoreTxt(ind)
         {
             const parts = carsLore[ind].split('\n');
@@ -2401,13 +2477,27 @@
 
         carViewEl.addEventListener('transitionend', (e) => 
         {
-            if (e.propertyName === 'transform')
+            if (e.propertyName === 'opacity')
             {
                 canSpin = true;
                 changeLoreTxt(0);
                 tarSpin = 0.009;
 
                 loreTxt.classList.add('show');
+
+                setInterval(() => 
+                {
+                    loreTxt.classList.remove('show');
+
+                    setTimeout(() => {
+                        currentCarIndex = (currentCarIndex + 1) % cars.length;
+                        loadCar(cars[currentCarIndex]);
+                        changeLoreTxt(currentCarIndex);
+
+                        loreTxt.classList.add('show');
+                    }, 400);
+
+                }, 8000);
             }
         });
 
@@ -2436,17 +2526,27 @@
             bookItemObs.observe(el);
         });
 
+        // --- Visibility tracking: pause car renderer when off-screen ---
+        let carVisible = false;
+        const carVisObs = new IntersectionObserver(entries => {
+            carVisible = entries[0].isIntersecting;
+        }, { threshold: 0 });
+        carVisObs.observe(carContainer);
+
         function update() 
         {
             requestAnimationFrame(update);
+
+            // Always lerp audio volume regardless of visibility
+            notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, 0.0001);
+
+            if (!carVisible) return;
 
             curSpin = lerp(curSpin, tarSpin, 0.001);
 
             if (carModel && canSpin) 
                 carModel.rotation.y += curSpin;
             carRenderer.render(carScene, carCamera);
-
-            notAloneAudio.volume = lerp(notAloneAudio.volume, notAloneVol, 0.0001)
         }
         update();
 
@@ -2563,9 +2663,18 @@
         const TICK = 1 / FPS;
         let f = 0;
 
+        // --- Visibility tracking: pause block renderer when off-screen ---
+        let blockVisible = false;
+        const blockVisObs = new IntersectionObserver(entries => {
+            blockVisible = entries[0].isIntersecting;
+        }, { threshold: 0 });
+        blockVisObs.observe(blockContainer);
+
         function animateBlock()
         {
             requestAnimationFrame(animateBlock);
+            if (!blockVisible) return;
+
             bClock.update();
             const delta = bClock.getDelta();
             bTime += delta;
