@@ -1902,13 +1902,8 @@
             }
         }
 
-        let firstInteractionDone = false;
-
         function showFirstTimeToast() 
         {
-            if (firstInteractionDone) return;
-            firstInteractionDone = true;
-
             const t = localStorage.getItem("tipsToastShown");
 
             if (!t) {
@@ -1923,23 +1918,9 @@
                             showToast('Tips', 'Navigation will unlock until you read all the content of my book po.', toThousands(10));
                         }, toThousands(8));
                     }, toThousands(8));
-                }, toThousands(3));
+                }, toThousands(5));
             }
         }
-
-        function handleFirstInteraction()
-        {
-            document.removeEventListener('click', handleFirstInteraction);
-            document.removeEventListener('scroll', handleFirstInteraction);
-            document.removeEventListener('touchstart', handleFirstInteraction);
-
-            showFirstTimeToast();
-            unlockAudio()
-        }
-
-        document.addEventListener('click', handleFirstInteraction);
-        document.addEventListener('scroll', handleFirstInteraction);
-        document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
 
         let currentToast = null;
 
