@@ -1898,26 +1898,6 @@
                             showToast('Tips', 'Navigation will unlock until you read all the content of my book po.', toThousands(10));
                         }, toThousands(8));
                     }, toThousands(8));
-                }, toThousands(3));
-            }
-        }
-
-        function showFirstTimeToast() 
-        {
-            const t = localStorage.getItem("tipsToastShown");
-
-            if (!t) {
-                localStorage.setItem('tipsToastShown', 'true');
-                setTimeout(() => {
-                    showToast('Notice', 'Pa! para ma unlock mo lahat, scroll down and read!');
-
-                    setTimeout(() => {
-                        showToast('Notice', 'Find my Book and Quill po sa baba..', toThousands(3));
-
-                        setTimeout(() => {
-                            showToast('Tips', 'Navigation will unlock until you read all the content of my book po.', toThousands(10));
-                        }, toThousands(8));
-                    }, toThousands(8));
                 }, toThousands(5));
             }
         }
