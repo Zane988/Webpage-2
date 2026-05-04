@@ -23,7 +23,6 @@
             image-rendering: optimizeQuality;
             text-rendering: optimizeLegibility;
             shape-rendering: optimizeSpeed;
-            
         }
 
         a, button, .item {
@@ -52,10 +51,11 @@
         
             font-family: Arial, sans-serif;
             color: white;
-            padding: 40px;
+            padding: 10px;
             margin: 0;
             overflow-x: hidden;
             transition: background 2s ease;
+            box-sizing: border-box;
         }
 
         body.faded {
@@ -612,6 +612,7 @@
             width: 100%;
             height: 500px;
             margin: auto;
+            overflow: hidden;
         }
 
         .book-back {
@@ -879,9 +880,9 @@
             position: absolute;
             bottom: -50px;
             left: 50%;
-            transform: translateX(-505px);
-            width: 720px;
-            height: 720px;
+            transform: translateX(-50%);
+            width: min(720px, 100vw);
+            height: min(720px, 100vw);
             opacity: 0;
             transition: opacity 3s ease-in-out, transform 4s ease-in-out;
             pointer-events: none;
@@ -944,8 +945,8 @@
             bottom: -100px;
             left: 50%;
             transform: translateX(-50%);
-            width: 420px;
-            height: 420px;
+            width: min(420px, 100vw);
+            height: min(420px, 100vw);
             opacity: 1;
             transition: opacity 4s ease-in-out, transform 4s ease-in-out;
             pointer-events: none;
@@ -996,9 +997,9 @@
                 position: absolute;
                 bottom: 0px;
                 left: 50%;
-                transform: translateX(-285px);
-                width: 560px;
-                height: 560px;
+                transform: translateX(-50%);
+                width: min(560px, 100vw);
+                height: min(560px, 100vw);
             }
 
             .car-name {
@@ -1026,6 +1027,7 @@
                 right: unset;
             }
 
+
             #model-viewer {
                 bottom: 160px;
                 left: 50%;
@@ -1042,7 +1044,6 @@
             }
 
             .grass {
-                inset: -30px;
                 background: url('minecraft/mc-grass.png') center / 600px no-repeat;
             }
 
