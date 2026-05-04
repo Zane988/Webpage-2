@@ -1862,6 +1862,36 @@
             });
         }
 
+        function toThousands(htmlTime = 1)
+        {
+            return htmlTime * 1000;
+        }
+
+        function showFirstTimeToast()
+        {
+            const t = localStorage.getItem("tipsToastShown")
+
+            if(!t)
+            {
+                localStorage.setItem('tipsToastShown', 'true')
+                setTimeout(() => 
+                {
+                    showToast('Notice', 'Pa! para ma unlock mo lahat, scroll down and read!')
+
+                    setTimeout(() => 
+                    {
+                        showToast('Notice', 'Find my Book and Quill po sa baba..', toThousands(3))
+
+                        setTimeout(() => 
+                        {
+                            showToast('Tips', 'Navigation will unlock until you read all the content of my book po.', toThousands(10))
+                        }, toThousands(8))
+                    }, toThousands(8))
+                }, toThousands(3))
+            }
+        }
+        showFirstTimeToast();
+
         let currentToast = null;
         let toastInSound = new Audio('sounds/in.ogg');
         toastInSound.volume = 0.85;
@@ -2065,8 +2095,26 @@
         }
 
         const pages = [
-            'HEYYY',
-            'What ever you do at the crossroads\n\nDont turn LEFT\n\nWhat ever you do at the crossroads\n\nDont turn LEFT'
+            "HELLOOOO POOOO PAPAAA KOOOOOOOOOOOOO,\nyou found the book and quill po didn't you? HAHAHA buti di pa po nag dedespawn!!\nI made this for you po papa, actually dapat nung 1yr and 17th monthsary natin\nkaso po wala napo time e and weeks kona po to ginawa..",
+            'What ever you do at the crossroads\n\nDont turn LEFT\n\nWhat ever you do at the crossroads\n\nDont turn LEFT',
+            "AYYY HAHAHAHA kaka Minecraft ARG ko to eh ayan WHAHAHAHAHA puro don't turn left aku huwhuwww, pero ahh maganda yannnnn!!\nKaso fandom niyan ginawa silang BL AHHAHAHAHA",
+            "Kaya yun po hindi kona din nagawa kasi incomplte po mapapakita ko nun huhu.. but look\nEto na po yun bilang memories nalang..",
+            "HAHAHA di me makatulog pero buti hindi atleast nagawa kopo matapos to ng maaga aga sa super dami rin po\nng mga buggys HAHAAAA",
+            "Sorry na po at dahil di ako makatulog nanaman ng maaga po.. Hirap po ehhh, but i'm a bit fineee naman po if you ask me AHAHA and i hope you are too..\n well tita said you're doing fine and kkumaakain na ng gulayyyyyyy!! WOWWW!",
+            "Tofu, Toge and Brocolli? Ayaw po ba? WHAHHAHAHAAHA magugustuhan morin po yan pag nasanay ka papa HAHAHAH hindi lagi need kumain niya pero\n\nOnti onti lang po ganonn mas mainam kung ganonn ahhhh WHHAHAHAHAHA\nMasharap po ynnnnn!",
+            "Ampalaya buti kumain ka HAHAHAAH sarili mopo luto! I wonder what it taste ^~^ For sure\nmasarap po yannn kahit ehemmmmmmmmmmmmmmmm mapait...\nide ko talaga kaya ung yan huhu kaya unang kain ko nasusuka ako yawa HWHAHAH",
+            "but here me AHAHAHA biglang nawawalan gana kumain, been thinking a lot of things but it doesn't matter na po AHAHAHAAHA Past is past ngani sabi mo po!",
+            "Happy 1yr and 8th last Monthsary po pala papa ko.. I LOVEEEEEEEEEEEE LOVEEEEEEEE YOU VERYYYYY VERYYYYYY MUCHHHH\nMWAHHHHH~\nMWAAAAAAAAAAAAAAAAA~\nHehe ikaw po if want mo mag reply go po..",
+            "Also don't hate yourself thinking you hurt me, you didn't po ha? I know may masasakit don but i know people change so i forgive you papa\nHAHAAH Nothing is perfect po lahat nakakamali po, so this is why i am very very casual parin..",
+            "..po makipag usap sayo papa. I also just want to say that i am sorry for all the things po dahil sa mga nsabi at mga nagawa kopo sorry po dun sa mga yun :( But i do doing my best to be better but i guess i wasn't good enough, so sorry papa that i failed you..",
+            "Matampuhin man po ako pero always parin po kitang mahal alam mo po yan ah?\nI'm sorry too papa dahil diko po mabigay yung want mo sa future mo.. It bugs me all the time but doesn't matter\nWala naman po akong magagawa kasi lalaki ako..",
+            "I wish you we're doing great papa, that now i'm gone. I'm doing.. fine to ig. But you don't have to worry about me naman po HAHAHA",
+            "My sincere apologies to all my wrongs papa.. You're enough po sakin ha? Don't think that you're not because YOU ARE A PERFECT love of my life and a person who entered my life.",
+            "Please po do not think that i am angry to you ha?? Don't please. Always ko nga chineckeck messenger ko or IG po ehh and TikTok.. kaso na unfllow mo po pala ako :( di po ako galit ha?",
+            "I wanna chat nga po ikaw e.. alam ko sinabi mo na wag or hinahayaan mo nalan na magsawa ako.. but hindi po ako magsasawa sa mahal ko.\nI'm always here po papa if want mo kausap, i'll always wait for you po!",
+            "I hope we could try again.. if someday you want, just text..",
+            "You are my dream po papa, makasama sa buong buhay ko po.. I'm really sorry po..",
+            "I really hope na naabutan mo po hanggang dito, i'll probably aalis rin po bukas. HAPPY 1yr and 8th MONTHSARY PAPA!\nI LOVEEE LOVEEE YOUUU VERYYY VERYYY MUCHH PO ULITTTT!! MWAAHH!~ I'm sorry po ulit.. and apologies accepted po\n\n               -Andrew"
         ];
 
         let currentPage = 0;
@@ -2080,6 +2128,7 @@
                 bookText.textContent = pages[currentPage];
                 bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
                 playTurnSound()
+                upd();
             }
         });
 
@@ -2090,6 +2139,7 @@
                 bookText.textContent = pages[currentPage];
                 bookPageInfo.textContent = `Page ${currentPage + 1} of ${pages.length}`;
                 playTurnSound()
+                upd();
             }
         });
 
@@ -2108,35 +2158,55 @@
             triggerShowing();
         });
 
+        let canshow = false;
+        function upd()
+        {
+            if(currentPage >= pages.length - 1) canshow = true;
+        }
+
         function triggerShowing()
         {
-            if(currentPage >= pages.length - 1)
+            if(canshow)
             {
                 const alreadySeen = localStorage.getItem('bookRead');
 
                 if(!alreadySeen)
                 {
                     localStorage.setItem('bookRead', 'true');
-                    fadeToWhite(3, 2, () => {
-                        hideAllDoc('show');
-                        window.scrollTo({ top: 0, behavior: 'instant' });
-                        document.querySelector('.book-item-lore').textContent = "You've read the book... Thank you papa.";
-                        notAloneAudio.loop = false;
-                        disableScrolling(false);
-                        localStorage.setItem('canShowBlock', 'true');
-                        document.querySelector('.block-container').classList.remove('hide');
-                        document.querySelector('.book-container').classList.add('move');
-                        document.querySelector('.nav-wrapper').classList.remove('firstHide')
-                        requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
-                    }, () => {
-                        setTimeout(() => {
-                            showToast('Notice', 'Scroll down!', 6*1000)
-                        }, 1000)
+                    notAloneAudio.volume = 0;
+                    notAloneAudio.pause();
+                    notAloneAudio.currentTime = 0;
+
+                    playSoundWithPitch('sounds/challenge-complete.ogg', getRandomFloat(0.8, 1.9));
+                    
+                    setTimeout(() => {
+                        showToast('YEYYYYY', 'Thank you for reading pa..')
 
                         setTimeout(() => {
-                            showToast('Notice', 'You unlocked the Navigation Tab! Explore more papa, scroll down!', 10*1000)
-                        }, 7*1000)
-                    })
+                            fadeToWhite(3, 2, () => 
+                            {
+                                hideAllDoc('show');
+                                window.scrollTo({ top: 0, behavior: 'instant' });
+                                document.querySelector('.book-item-lore').textContent = "You've read the book... Thank you papa.";
+                                notAloneAudio.loop = false;
+                                disableScrolling(false);
+                                localStorage.setItem('canShowBlock', 'true');
+
+                                document.querySelector('.block-container').classList.remove('hide');
+                                document.querySelector('.book-container').classList.add('move');
+                                document.querySelector('.nav-wrapper').classList.remove('firstHide')
+                                requestAnimationFrame(() => window.refreshBlockRenderer && window.refreshBlockRenderer());
+                            }, () => {
+                                setTimeout(() => {
+                                    showToast('Notice', 'Scroll down!', 6*1000)
+                                }, 1000)
+
+                                setTimeout(() => {
+                                    showToast('Notice', 'You unlocked the Navigation Tab! Explore more papa, scroll down!', 10*1000)
+                                }, 7*1000)
+                            })
+                        }, toThousands(4));
+                    }, toThousands(2));
                 }
             }
         }
@@ -2168,9 +2238,17 @@
                 if (entry.isIntersecting) 
                 {
                     const el = entry.target;
-                    if(!bookLoreToastShown)
+                    if(!localStorage.getItem('bookSeen'))
                     {
-                        setTimeout(()=> showToast('Notice', "You can click the book and see what's inside.", 10*1000), 2000)
+                        setTimeout(()=> 
+                        {
+                            showToast('Notice', "You can click the book and see what's inside.", toThousands(6))
+                            setTimeout(()=> 
+                            {
+                                showToast('Notice', "Real all po. To unlock the navigation bar and explore narin papa!", toThousands(6))
+
+                            },  toThousands(8))
+                        },  toThousands(3))
                         bookLoreToastShown = true;
                     }
                     
