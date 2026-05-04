@@ -55,6 +55,11 @@
             padding: 40px;
             margin: 0;
             overflow-x: hidden;
+            transition: background 2s ease;
+        }
+
+        body.faded {
+            background: #000000;
         }
 
         .nav-wrapper {
@@ -136,6 +141,11 @@
 
             will-change: background-position;
             background-size: 20% 20%;
+            transition: opacity 2s ease;
+        }
+
+        .grid-bg.faded {
+            opacity: 0;
         }
 
         h1 {
@@ -862,6 +872,7 @@
             width: 100%;
             height: 500px;
             margin: auto;
+            pointer-events: none;
         }
 
         #car-viewer {
@@ -917,10 +928,11 @@
             position: relative;
             bottom: -50px;
             width: 100%;
-            height: 200px;
+            height: 300px;
             margin: auto;
             left: 50%;
             transform: translateX(-50%);
+            pointer-events: none;
         }
 
         .block-container.hide {
@@ -929,7 +941,7 @@
 
         #block-viewer {
             position: absolute;
-            bottom: -50px;
+            bottom: -100px;
             left: 50%;
             transform: translateX(-50%);
             width: 420px;
@@ -952,7 +964,7 @@
             position: absolute;
             bottom: 0;
             left: 50%;
-            transform: translateX(-50%) translateY(150px);
+            transform: translateX(-50%) translateY(50px);
             text-align: center;
             width: 100%;
             font-family: 'Minecraft';
@@ -970,11 +982,15 @@
                 position: absolute;
                 bottom: 20px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translateX(-50%) translateY(50px);
                 text-align: center;
                 width: 70%;
                 font-size: 14px;
                 max-width: 600px;
+            }
+
+            .block-container {
+                height: 200px;
             }
             #car-viewer {
                 position: absolute;
@@ -1019,9 +1035,6 @@
                 font-size: 21px;
                 margin-left: 25px;
                 text-align: left;
-            }
-            html, body {
-                overflow-x: hidden;
             }
 
             .float-wrapper {
@@ -1271,7 +1284,7 @@
             }
 
             body {
-                margin-bottom: -100px
+                margin-bottom: -100px;
             }
         }
 
@@ -1804,9 +1817,24 @@
             ballsObserver.observe(bl)
         })
 
-        if(localStorage.getItem('bookSeen')) 
+        if(localStorage.getItem('bookRead')) 
         {
             document.querySelector('.book-item-lore').textContent = "You've read the book... Thank you papa.";
+        }
+
+        if(localStorage.getItem('bookSeen') && !localStorage.getItem('bookRead'))
+        {
+            window.addEventListener('load', () => {
+                window.hideAllDoc && window.hideAllDoc();
+                window.disableScrolling && window.disableScrolling(true);
+                if (window.notAloneAudio) 
+                {
+                    window.notAloneAudio.volume = 0;
+                    window.notAloneAudio.play();
+                }
+                window.setNotAloneVol && window.setNotAloneVol(0.2);
+                document.querySelector('.book-container').scrollIntoView({ behavior: 'instant', block: 'center' });
+            });
         }
 
         if(!localStorage.getItem('canShowBlock')) 
@@ -2139,13 +2167,18 @@
 
         function hideAllDoc(hideOrShow = 'hide')
         {
+            const grid = document.querySelector('.grid-bg');
             switch(hideOrShow.toLowerCase())
             {
                 case 'hide': 
-                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-warp').forEach(el => el.classList.add('hide-all'));
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-wrap').forEach(el => el.classList.add('hide-all'));
+                    grid.classList.add('faded');
+                    document.body.classList.add('faded');
                     break;
                 case 'show':
-                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-warp').forEach(el => el.classList.remove('hide-all'));
+                    document.querySelectorAll('h1, .flex-stage, .Message2, .ball-reveal, h2, .art-carousel, .car-container, .nav-wrapper, .car-reflect-wrap').forEach(el => el.classList.remove('hide-all'));
+                    grid.classList.remove('faded');
+                    document.body.classList.remove('faded');
                     break;
             }
         }
@@ -2200,6 +2233,11 @@
         notAloneAudio.currentTime = 0;
 
         window.notAloneAudio = notAloneAudio;
+        window.setNotAloneVol = (v) => { notAloneVol = v; };
+
+        let curSpin = 0;
+        let tarSpin = 0;
+        let notAloneVol = 0.0;
 
         const lerp = (a, b, t) => a + (b - a) * t;
         const mobileQuery = window.matchMedia("(max-width: 800px)");
@@ -2335,7 +2373,6 @@
         carDirLight.castShadow = false;
         carScene.add(carDirLight);
 
-        /* Reflective environment — toggled by button, off by default */
         let carEnvTexture = null;
         let reflectEnabled = false;
 
@@ -2449,10 +2486,6 @@
             loreTxt.innerHTML = `<span class="car-name">${name}</span>${desc}`;
         }
         
-        let curSpin = 0;
-        let tarSpin = 0;
-        let notAloneVol = 0.0;
-
         window.addEventListener('resize', () => 
         {
             carRenderer.setSize(carContainer.clientWidth, carContainer.clientHeight);
@@ -2509,7 +2542,7 @@
 
                     if(alreadySeenForBook) return;
 
-                    notAloneVol = 0.5;
+                    notAloneVol = 0.2;
                     notAloneAudio.play();
 
                     localStorage.setItem('bookSeen', 'true');
@@ -2526,7 +2559,6 @@
             bookItemObs.observe(el);
         });
 
-        // --- Visibility tracking: pause car renderer when off-screen ---
         let carVisible = false;
         const carVisObs = new IntersectionObserver(entries => {
             carVisible = entries[0].isIntersecting;
@@ -2663,7 +2695,6 @@
         const TICK = 1 / FPS;
         let f = 0;
 
-        // --- Visibility tracking: pause block renderer when off-screen ---
         let blockVisible = false;
         const blockVisObs = new IntersectionObserver(entries => {
             blockVisible = entries[0].isIntersecting;
@@ -2673,6 +2704,8 @@
         function animateBlock()
         {
             requestAnimationFrame(animateBlock);
+
+            console.log(notAloneAudio.volume)
             if (!blockVisible) return;
 
             bClock.update();
@@ -2682,7 +2715,8 @@
             BtoAnim.forEach(a => a.update(delta));
 
             f += delta;
-            if (f >= TICK) {
+            if (f >= TICK) 
+            {
                 f %= TICK;
 
                 flowerNodes.forEach((group, i) => {
